@@ -553,6 +553,11 @@ class HomeController extends Controller
             return Redirect::to('login');
         }
         $dati = $request->all();
+        if (isset($dati['change_mg_session'])) {
+            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'],)]);
+            session()->save();
+            return Redirect::to('magazzino/carico4/'.$id_fornitore.'/'.$id_dotes);
+        }
         if (isset($dati['elimina_riga'])) {
             DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
         }
@@ -607,7 +612,17 @@ class HomeController extends Controller
             $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ');
             $magazzini_selected = DB::SELECT('SELECT * from MGCausale where Cd_MGCausale = (SELECT TOP 1 Cd_MGCausale FROM DO where cd_do = \'' . $cd_do . '\')');
             $magazzini = DB::SELECT('SELECT * from MG');
-            return View::make('carico_magazzino4', compact('magazzini_selected', 'magazzini', 'fornitore', 'id_dotes', 'documento', 'articolo', 'flusso', 'righe'));
+            if (!session()->has('\'' . $id_dotes . '\'')) {
+                if ($magazzini_selected > 0) {
+                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P,);
+                } else {
+                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '',);
+                }
+                session(['\'' . $id_dotes . '\'' => $session]);
+                session()->save();
+            }
+            $session_mag = session('\'' . $id_dotes . '\'');
+            return View::make('carico_magazzino4', compact('magazzini_selected', 'session_mag', 'magazzini', 'fornitore', 'id_dotes', 'documento', 'articolo', 'flusso', 'righe'));
 
         }
 
@@ -619,6 +634,12 @@ class HomeController extends Controller
             return Redirect::to('login');
         }
         $dati = $request->all();
+        if (isset($dati['change_mg_session'])) {
+            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'],)]);
+            session()->save();
+
+            return Redirect::to('magazzino/carico04/'.$id_fornitore.'/'.$id_dotes);
+        }
         if (isset($dati['elimina_riga'])) {
             DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
         }
@@ -673,8 +694,17 @@ class HomeController extends Controller
             $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ');
             $magazzini_selected = DB::SELECT('SELECT * from MGCausale where Cd_MGCausale = (SELECT TOP 1 Cd_MGCausale FROM DO where cd_do = \'' . $cd_do . '\')');
             $magazzini = DB::SELECT('SELECT * from MG');
-
-            return View::make('carico_magazzino04', compact('magazzini_selected', 'magazzini', 'fornitore', 'id_dotes', 'documento', 'articolo'));
+            if (!session()->has('\'' . $id_dotes . '\'')) {
+                if ($magazzini_selected > 0) {
+                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P,);
+                } else {
+                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '',);
+                }
+                session(['\'' . $id_dotes . '\'' => $session]);
+                session()->save();
+            }
+            $session_mag = session('\'' . $id_dotes . '\'');
+            return View::make('carico_magazzino04', compact('session_mag', 'magazzini_selected', 'magazzini', 'fornitore', 'id_dotes', 'documento', 'articolo'));
 
         }
 

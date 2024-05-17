@@ -254,6 +254,7 @@ class AjaxController extends Controller
             }
         }
     */
+
     public
     function segnalazione_salva($id_dotes, $id_dorig, $testo)
     {
@@ -1328,17 +1329,19 @@ class AjaxController extends Controller
             $varianti = DB::SELECT('SELECT Ud_VR1  as taglia, Ud_VR2 as colore  from x_ARVRAlias where Alias = \'' . $q . '\' ');
             foreach ($articoli as $articolo) { ?>
 
-                <li class="list-group-item">
-                    <a href="#" onclick="" class="media">
-                        <div class="media-body"
-                             onclick="cerca_articolo_codice_2('<?php echo $cd_cf ?>','<?php echo $articolo->Cd_AR ?>','<?php if ($articolo->Cd_ARLotto != '') echo $articolo->Cd_ARLotto; else echo '0'; ?>','<?php if ($qta != '') echo $qta; else echo '0'; ?>','<?php echo $varianti[0]->taglia ?>','<?php echo $varianti[0]->colore ?>')">
-                            <h5><?php echo $articolo->Descrizione; ?></h5>
-                            <p>Codice: <?php echo $articolo->Cd_AR ?></p>
-                        </div>
-                    </a>
-                </li>
+
+                cerca_articolo_codice_2('<?php echo $cd_cf ?>','<?php echo $articolo->Cd_AR ?>','<?php if ($articolo->Cd_ARLotto != '') echo $articolo->Cd_ARLotto; else echo '0'; ?>','<?php if ($qta != '') echo $qta; else echo '0'; ?>','<?php echo $varianti[0]->taglia ?>','<?php echo $varianti[0]->colore ?>')
 
             <?php }
+             /*<li class="list-group-item">
+                    <a href="#" onclick="" class="media">
+                        <div class="media-body"
+                             onclick="">
+                            <h5><?php /*echo $articolo->Descrizione; *//*?></h5>
+                            <p>Codice: <?php /*echo $articolo->Cd_AR *//*?></p>
+                        </div>
+                    </a>
+                </li>*/
         }
     }
 

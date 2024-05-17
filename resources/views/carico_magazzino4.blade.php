@@ -356,6 +356,37 @@
 
                 <!-- <button style="width:80%;margin:0 auto;display:block;margin-bottom:0;" class="btn btn-primary" onclick="$('#modal_cerca_articolo').modal('show');">Aggiungi Prodotto</button>
                 -->
+                <form method="post" id="session">
+                    <input type="hidden" name="change_mg_session" value="change_mg_session">
+                    <div style="width: 90%;display: flex;gap: 5%;margin:2% 5% 0 5%">
+                        <div style="width: 90%;">
+                            <label for="cd_mg_p" style="font-weight: bolder;">
+                                Codice Magazzino Partenza
+                            </label>
+                            <input value="{{ $session_mag['cd_mg_p'] }}" class="form-control" id="cd_mg_p"
+                                   name="cd_mg_p" onblur="change_mag()"
+                                   list="magazzini_partenza">
+                            <datalist id="magazzini_partenza">
+                                @foreach($magazzini as $m)
+                                    <option value="{{$m->Cd_MG}}"> {{$m->Descrizione}}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                        <div style="width: 90%;">
+                            <label for="cd_mg_a" style="font-weight: bolder;">
+                                Codice Magazzino di Arrivo
+                            </label>
+                            <input value="{{ $session_mag['cd_mg_a'] }}" class="form-control" id="cd_mg_a"
+                                   name="cd_mg_a" onblur="change_mag('cd_mg_a')"
+                                   list="magazzini_arrivo">
+                            <datalist id="magazzini_arrivo">
+                                @foreach($magazzini as $m)
+                                    <option value="{{$m->Cd_MG}}"> {{$m->Descrizione}}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
+                    </div>
+                </form>
                 <button
                     style="margin-top:10px !important;width:80%;margin:auto;display:block;background-color:lightblue;border:lightblue"
                     class="btn btn-primary" type="button"
@@ -966,9 +997,7 @@
                             id="cd_mg_p">
                         <option value="">Scegli il magazzino...</option>
                         <?php foreach ($magazzini as $m) { ?>
-                        <option <?php foreach ($magazzini_selected as $m1) {
-                            if ($m1->Cd_MG_P == $m->Cd_MG) echo 'selected';
-                        } ?>
+                        <option <?php if ($session_mag['cd_mg_p'] == $m->Cd_MG) echo 'selected'; ?>
                                 value="<?php echo $m->Cd_MG ?>"><?php echo $m->Cd_MG . ' - ' . $m->Descrizione; ?></option>
                         <?php } ?>
                     </select>
@@ -978,9 +1007,7 @@
                             id="cd_mg_a">
                         <option>Scegli il magazzino...</option>
                         <?php foreach ($magazzini as $m) { ?>
-                        <option <?php foreach ($magazzini_selected as $m1) {
-                            if ($m1->Cd_MG_A == $m->Cd_MG) echo 'selected';
-                        } ?>
+                        <option <?php if ($session_mag['cd_mg_a'] == $m->Cd_MG) echo 'selected'; ?>
                                 value="<?php echo $m->Cd_MG ?>"><?php echo $m->Cd_MG . ' - ' . $m->Descrizione; ?></option>
                         <?php } ?>
                     </select>
@@ -1139,6 +1166,9 @@
 </body>
 </html>
 <script type="text/javascript">
+    function change_mag() {
+        $('#session').submit();
+    }
 
     function modifica(id_dorig) {
         $.ajax({
