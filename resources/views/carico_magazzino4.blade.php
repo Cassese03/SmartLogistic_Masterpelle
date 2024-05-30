@@ -385,6 +385,20 @@
                                 @endforeach
                             </datalist>
                         </div>
+                        <div style="width: 90%;">
+                            <label for="doc_evadi" style="font-weight: bolder;">
+                                Documento da evadere in
+                            </label>
+                            <input value="{{ $session_mag['doc_evadi'] }}" class="form-control" id="doc_evadi"
+                                   name="doc_evadi" onblur="change_mag('doc_evadi')"
+                                   list="doc_evasione">
+                            <datalist id="doc_evasione">
+                                @foreach($flusso as $f)
+                                    <option class="form-control" type="text"
+                                            value="{{$f->Cd_DO}}">{{$f->Cd_DO}}</option>
+                                @endforeach
+                            </datalist>
+                        </div>
                     </div>
                 </form>
                 <button
@@ -397,7 +411,8 @@
                 <button
                     style="margin-top:10px !important;width:80%;margin:0 auto;display:block;background-color:red;border: red"
                     class="btn btn-primary" type="button" onclick="evadi_articolo2('1');">Evadi Righe<input
-                        style="background-color:red;border: red" size='1' class="btn btn-primary" type="text" readonly
+                        style="background-color:red;border: red" size='1' class="btn btn-primary" type="text"
+                        readonly
                         id="button" value="0"> /(<?php echo $righe ?>)
                 </button>
                 <input type="hidden" id="DORIG" value="">
@@ -412,21 +427,25 @@
 
                                 <?php foreach ($documento->righe as $r){
                                 $totale = 0; ?>
-                                <?php if ($r->QtaEvadibile > 0){ ?>
-                            <li class="list-group-item" id="riga_<?php echo $r->Id_DORig ?>">
+                                <?php if ($r->QtaRes > 0){ ?>
+                            <input type="hidden"
+                                   id="qta_max_evad_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
+                                   value="<?php echo $r->QtaRes;?>">
+
+                            <li class="list-group-item"
+                                id="riga_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
                                 <a href="#" onclick="" class="media">
                                     <div class="media-body">
                                         <div class="row">
                                             <div class="col-xs-12 col-sm-12 col-md-12">
-
-                                                <h5 style="text-align:center<?php if ($r->QtaEvadibile == 0) echo ';color: red' ?>"><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
+                                                <h5 style="text-align: center;color: white;"
+                                                    id="riga_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>_counter">
+                                                </h5>
+                                                <h5 style="text-align:center<?php if ($r->QtaRes == 0) echo ';color: red' ?>"><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
                                                     <br><?php echo 'Prezzo :' . round(floatval($r->PrezzoUnitarioV), 2); ?>
-                                                    <br> Qta : <?php echo floatval($r->QtaEvadibile) ?>
-                                                                   <?php if ($r->x_VRData != '') {
-                                                            $variante = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,(SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,VR.Prezzo,VR.Qta FROM DORig outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE Id_DORig = ' . $r->Id_DORig . ' ORDER BY TIMEINS DESC')[0];
-                                                            echo '<br> Taglia : ' . $variante->Taglia . ' <br> Colore : ' . $variante->Colore;
-                                                        }
-                                                                   ?>
+                                                    <br> Qta : <?php echo floatval($r->QtaRes) ?>
+                                                                   <?php echo '<br> Taglia : ' . $r->Taglia . ' <br> Colore : ' . $r->Colore; ?>
+
                                                                    <?php /* echo  'Magazzino di Partenza: '.$r->Cd_MG_P;if($r->Cd_MGUbicazione_A != null) echo ' - '.$r->Cd_MGUbicazione_A;?><br><?php echo' Magazzino di Arrivo: '.$r->Cd_MG_A;?><br><?php if($r->Cd_ARLotto != Null)echo 'Lotto: '.$r->Cd_ARLotto;*/ ?>
                                                 </h5>
 
@@ -437,7 +456,7 @@
                                                     <input type="hidden" id="codice" value="<?php echo $r->Cd_AR ?>">
                                                     <button style="width:24%;" type="reset" name="segnalazione" value=""
                                                             class="btn btn-warning btn-sm"
-                                                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig?>').modal('show');">
+                                                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>').modal('show');">
                                                         <i class="fa fa-exclamation-triangle" aria-hidden="true">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="16"
                                                                  height="16" fill="currentColor"
@@ -452,7 +471,7 @@
                                                     <button style="width:24%;" type="reset" name="modifica_riga"
                                                             value="<?php echo $r->Cd_AR;?>"
                                                             class="btn btn-primary btn-sm"
-                                                            onclick="modifica('<?php echo $r->Id_DORig ?>')">
+                                                            onclick="modifica('<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>')">
                                                         <i class="bi bi-pencil">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="16"
                                                                  height="16" fill="currentColor" class="bi bi-pencil"
@@ -465,7 +484,7 @@
                                                     <button style="width:24%;" type="reset" name="evadi_riga"
                                                             value="<?php echo $r->Cd_AR;?>"
                                                             class="btn btn-success btn-sm"
-                                                            onclick="controllo_articolo_smart2('<?php echo $r->Cd_AR?>')">
+                                                            onclick="controllo_articolo_smart2('<?php echo $r->xAlias?>')">
                                                         <i class="bi bi-check-circle">
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="16"
                                                                  height="16" fill="currentColor"
@@ -478,7 +497,7 @@
                                                         </i>
                                                     </button>
                                                     <input type="hidden" name="Id_DORig"
-                                                           value="<?php echo $r->Id_DORig ?>">
+                                                           value="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
                                                     <button style="width:24%;" type="submit" name="elimina_riga"
                                                             value="Elimina" class="btn btn-danger btn-sm">
                                                         <i class="bi bi-trash-fill">
@@ -617,6 +636,8 @@
 
                     <input class="form-control" type="hidden" id="modal_controllo_dorig" value="" autocomplete="off"
                            readonly>
+                    <input class="form-control" type="hidden" id="modal_controllo_dorig_tc" value="" autocomplete="off"
+                           readonly>
 
 
                 </div>
@@ -705,16 +726,16 @@
                 <div class="modal-body" id="ajax_lista_documenti_1">
                 </div>
                 <?php foreach ($documento->righe as $r) { ?>
-                <input type="hidden" name="modal_Cd_ARLotto_c_<?php echo $r->Id_DORig?>"
-                       id="modal_Cd_ARLotto_c_<?php echo $r->Id_DORig?>">
-                <input type="hidden" name="modal_Cd_AR_c_<?php echo $r->Id_DORig?>"
-                       id="modal_Cd_AR_c_<?php echo $r->Id_DORig?>">
-                <input type="hidden" name="modal_Qta_c_<?php echo $r->Id_DORig?>"
-                       id="modal_Qta_c_<?php echo $r->Id_DORig?>">
-                <input type="hidden" name="modal_QtaEvasa_c_<?php echo $r->Id_DORig?>"
-                       id="modal_Qta_c_<?php echo $r->Id_DORig?>">
-                <input type="hidden" name="modal_Prezzo_c_<?php echo $r->Id_DORig?>"
-                       id="modal_Prezzo_c_<?php echo $r->Id_DORig?>">
+                <input type="hidden" name="modal_Cd_ARLotto_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                       id="modal_Cd_ARLotto_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>">
+                <input type="hidden" name="modal_Cd_AR_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                       id="modal_Cd_AR_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>">
+                <input type="hidden" name="modal_Qta_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                       id="modal_Qta_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>">
+                <input type="hidden" name="modal_QtaEvasa_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                       id="modal_Qta_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>">
+                <input type="hidden" name="modal_Prezzo_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                       id="modal_Prezzo_c_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>">
                 <?php } ?>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"
@@ -754,21 +775,23 @@
     </div>
 </div>
 <?php foreach ($documento->righe as $r){ ?>
-<div class="modal" id="modal_segnalazione<?php echo $r->Id_DORig?>" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal" id="modal_segnalazione<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>" tabindex="-1"
+     role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <form method="post">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Segnalazione</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
 
                 <div class="modal-body">
 
-                    <input type="number" class="form-control" id="Segnala_riga" value="<?php echo $r->Id_DORig;?>"
+                    <input type="number" class="form-control" id="Segnala_riga"
+                           value="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;;?>"
                            readonly><br>
                     <input type="text" class="form-control" id="Segnalazione" value=""
                            placeholder="Inserire Segnalazione..." autofocus autocomplete="off">
@@ -776,7 +799,7 @@
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_segnalazione<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         Chiudi
                     </button>
                     <button type="button" class="btn btn-primary" onclick="segnalazione();">Invia Segnalazione</button>
@@ -868,14 +891,15 @@
 </div>
 
 <?php foreach ($documento->righe as $r) { ?>
-<div class="modal" id="modal_modifica_<?php  echo $r->Id_DORig ?>" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal" id="modal_modifica_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>" tabindex="-1"
+     role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <form method="post">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Modifica Articolo <?php echo $r->Cd_AR ?></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                            onclick="$('#modal_modifica_<?php  echo $r->Id_DORig ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_modifica_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
@@ -896,9 +920,10 @@
 
                 </div>
                 <div class="modal-footer">
-                    <input type="hidden" name="Id_DORig" value="<?php echo $r->Id_DORig ?>">
+                    <input type="hidden" name="Id_DORig"
+                           value="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"
-                            onclick="$('#modal_modifica_<?php  echo $r->Id_DORig ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_modifica_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         Chiudi
                     </button>
                     <button type="submit" name="modifica_riga" value="Salva" class="btn btn-primary">Salva</button>
@@ -910,59 +935,61 @@
 <?php } ?>
 
 <?php foreach ($documento->righe as $r) { ?>
-<div class="modal" id="modal_evadi_riga_<?php  echo $r->Id_DORig ?>" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal" id="modal_evadi_riga_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>" tabindex="-1"
+     role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <form method="post">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Evadi Articolo <?php echo $r->Cd_AR ?></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div id="ajax_modal_evadi_riga_<?php  echo $r->Id_DORig ?>"></div>
+                    <div id="ajax_modal_evadi_riga_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"></div>
 
                     <label>Quantita</label>
-                    <input class="form-control" type="number" id="modal_Qta_<?php  echo $r->Id_DORig ?>" min="0"
-                           max="<?php echo floatval($r->QtaEvadibile)?>"
-                           value="<?php echo floatval($r->QtaEvadibile) ?>" required
+                    <input class="form-control" type="number"
+                           id="modal_Qta_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>" min="0"
+                           max="<?php echo floatval($r->QtaRes)?>"
+                           value="<?php echo floatval($r->QtaRes) ?>" required
                            placeholder="Inserisci la Quantità da evadere" step="0.01">
                     <br>
                     <label>Documento da Evadere in :</label>
                     <select style="width:100%;border:none;font-size:medium;background:transparent;"
-                            id="modal_inserimento_flusso_<?php  echo $r->Id_DORig ?>">
+                            id="modal_inserimento_flusso_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
                             <?php foreach ($flusso as $f){ ?>
                         <option class="form-control" type="text"
                                 value="<?php echo $f->Cd_DO ?>"><?php echo $f->Cd_DO ?></option>
                         <?php } ?>
                     </select>
                     <br><br>
-                    <input type="hidden" id="modal_inserimento_magazzino_<?php echo $r->Id_DORig?>" value="00001">
-                    <input type="hidden" id="modal_magazzino_<?php  echo $r->Id_DORig ?>"
+                    <input type="hidden"
+                           id="modal_inserimento_magazzino_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
+                           value="00001">
+                    <input type="hidden" id="modal_magazzino_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
                            value="<?php if(str_replace(" ","",$documento->Cd_Do) == 'OF') echo $r->Cd_MG_A; if(str_replace(" ","",$documento->Cd_Do) == 'OC') echo $r->Cd_MG_P ;?>">
-                    <input type="hidden" id="modal_codice_<?php  echo $r->Id_DORig ?>" value="<?php echo $r->Cd_AR?>">
-                    <input type="hidden" id="modal_ubicazione_<?php  echo $r->Id_DORig ?>"
+                    <input type="hidden" id="modal_codice_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
+                           value="<?php echo $r->Cd_AR?>">
+                    <input type="hidden"
+                           id="modal_ubicazione_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
                            value="<?php echo $r->Cd_MGUbicazione_A?>">
-                    <input type="hidden" id="modal_lotto_<?php  echo $r->Id_DORig ?>"
+                    <input type="hidden" id="modal_lotto_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
                            value="<?php if($r->Cd_ARLotto!=null)echo $r->Cd_ARLotto; else echo '0'?>">
-                    <!--
-
-                    <input type="hidden" id="modal_PrezzoUnitarioV_<?php echo $r->Id_DORig ?>" value="<?php echo $r->PrezzoUnitarioV ?>">
--->
 
 
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" style="width: 33%" data-dismiss="modal"
-                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         Chiudi
                     </button>
                     <button type="button" class="btn btn-primary" style="width: 33%"
-                            onclick="evadi_articolo(<?php echo $r->Id_DORig; ?>);">Evadi
+                            onclick="evadi_articolo(<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;; ?>);">Evadi
                     </button>
-                        <?php //<button type="button" class="btn btn-primary" style="width: 38%" onclick="evadi_articolo2(<?php echo $r->Id_DORig; ?><?php //);" >Nuovo Doc</button>?>
+                        <?php //<button type="button" class="btn btn-primary" style="width: 38%" onclick="evadi_articolo2(<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;; ?><?php //);" >Nuovo Doc</button>?>
                 </div>
             </div>
         </form>
@@ -977,40 +1004,22 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Evadi Articolo <?php echo $r->Cd_AR ?></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
-                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
+                            onclick="$('#modal_evadi_riga_<?php  echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus()">
                         <span aria-hidden="true">×</span>
                     </button>
                 </div>
                 <div class="modal-body">
-
-                    <label>Documento da Evadere in :</label>
-                    <select style="width:100%;border:none;font-size:medium;background:transparent;"
-                            id="modal_inserimento_flusso">
-                        <?php foreach ($flusso as $f){ ?>
-                        <option class="form-control" type="text"
-                                value="<?php echo $f->Cd_DO ?>"><?php echo $f->Cd_DO ?></option>
-                        <?php } ?>
-                    </select>
-                    <br><br>
                     <label>Magazzino di Partenza</label>
-                    <select style="width:100%;border:none;font-size:medium;background:transparent;"
-                            id="cd_mg_p">
-                        <option value="">Scegli il magazzino...</option>
-                        <?php foreach ($magazzini as $m) { ?>
-                        <option <?php if ($session_mag['cd_mg_p'] == $m->Cd_MG) echo 'selected'; ?>
-                                value="<?php echo $m->Cd_MG ?>"><?php echo $m->Cd_MG . ' - ' . $m->Descrizione; ?></option>
-                        <?php } ?>
-                    </select>
+                    <input type="text" readonly value="{{$session_mag['cd_mg_p'] }}"
+                           style="width:100%;border:none;font-size:medium;background:transparent;">
                     <br><br>
                     <label>Magazzino di Arrivo</label>
-                    <select style="width:100%;border:none;font-size:medium;background:transparent;"
-                            id="cd_mg_a">
-                        <option>Scegli il magazzino...</option>
-                        <?php foreach ($magazzini as $m) { ?>
-                        <option <?php if ($session_mag['cd_mg_a'] == $m->Cd_MG) echo 'selected'; ?>
-                                value="<?php echo $m->Cd_MG ?>"><?php echo $m->Cd_MG . ' - ' . $m->Descrizione; ?></option>
-                        <?php } ?>
-                    </select>
+                    <input type="text" readonly value="{{$session_mag['cd_mg_a'] }}"
+                           style="width:100%;border:none;font-size:medium;background:transparent;">
+                    <br><br>
+                    <label>Documento da Evadere in :</label>
+                    <input type="text" readonly value="{{$session_mag['doc_evadi'] }}"
+                           style="width:100%;border:none;font-size:medium;background:transparent;">
 
                 </div>
                 <div class="modal-footer">
@@ -1019,7 +1028,7 @@
                         Chiudi
                     </button>
                     <button type="button" class="btn btn-primary" style="width: 33%"
-                            onclick="evadi_articolo3();">Evadi
+                            onclick="conferma_righe();">Evadi
                     </button>
                 </div>
             </div>
@@ -1081,6 +1090,15 @@
             &times;
         </button>
         <strong>Warning!</strong> <br>La riga è gia' in fase di evasione</a>.
+    </div>
+</div>
+<div class="modal" id="modal_alertMaxEvasione" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="close"
+                onclick="$('#modal_alertMaxEvasione').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus() ">
+            &times;
+        </button>
+        <strong>Warning!</strong> <br>La riga ha raggiunto il massimo della quantità evadibile</a>.
     </div>
 </div>
 
@@ -1166,6 +1184,9 @@
 </body>
 </html>
 <script type="text/javascript">
+
+    var evadi = {};
+
     function change_mag() {
         $('#session').submit();
     }
@@ -1182,46 +1203,6 @@
 
     cd_cf = '<?php echo $fornitore->Cd_CF ?>';
 
-    function segnalazione() {
-        Id_DoRig = document.getElementById('Segnala_riga').value;
-        Segnalazione = document.getElementById('Segnalazione').value;
-
-        if (Id_DoRig != '') {
-            $.ajax({
-                url: "<?php echo URL::asset('ajax/segnalazione') ?>/<?php echo $id_dotes ?>/" + Id_DoRig + "/-" + encodeURIComponent(Segnalazione),
-
-            }).done(function (result) {
-            });
-        }
-        if (Id_DoRig != '') {
-            $.ajax({
-                url: "<?php echo URL::asset('ajax/invia_mail') ?>/<?php echo $id_dotes ?>/" + 2 + "/-" + Segnalazione
-            }).done(function (result) {
-                $('#modal_alertSegnalazione').modal('show');
-            });
-        }
-    }
-
-    function salva_documento() {
-
-        Cd_Do = 0;
-        Id_DoTes = '<?php echo $id_dotes ?>';
-        magazzino_A = 0;
-
-        if (Id_DoTes != '')
-            $.ajax({
-                url: "<?php echo URL::asset('ajax/salva_documento1') ?>/" + Id_DoTes + "/" + Cd_Do + "/" + magazzino_A
-
-            }).done(function (result) {
-
-
-                $('#modal_evadi_documento').modal('hide');
-                $('#modal_lista_salva').modal('show');
-                $('#ajax_lista_documenti_1').html(result);
-
-            });
-
-    }
 
     function check() {
         check2 = document.getElementById('cerca_articolo2').value;
@@ -1240,13 +1221,28 @@
         }
     }
 
+
     function evadi_articolo2(conf) {
 
         if (conf != '1') {
             document.getElementById('cerca_articolo2').value = '';
             text = document.getElementById('modal_controllo_dorig').value;
+            find2 = document.getElementById('modal_controllo_dorig_tc').value;
             dorig = document.getElementById('DORIG').value;
-            if (dorig.search(text) == (-1)) {
+            max_evasione = document.getElementById('qta_max_evad_' + text).value;
+
+            if (typeof (evadi[text]) != "undefined" && evadi[text] !== null) {
+                if (parseInt(evadi[text] + 1) <= parseInt(max_evasione))
+                    evadi[text] = evadi[text] + 1;
+                else {
+                    $('#modal_alertMaxEvasione').modal('show');
+                    return;
+                }
+
+            } else {
+                evadi[text] = 1;
+            }
+            /*if (dorig.search(text) == (-1)) {
                 if (dorig != '')
                     document.getElementById('DORIG').value = document.getElementById('DORIG').value + "','" + text;
                 if (dorig == '')
@@ -1254,19 +1250,17 @@
             } else {
                 $('#modal_alertEvasione').modal('show');
                 return;
-            }
+            }*/
             document.getElementById('cerca_articolo2').focus();
-            righe = document.getElementById('button').value;
-            righe++;
-            document.getElementById('button').value = righe;
-            document.getElementById('button').innerHTML = 'Evadi Righe (' + righe + ')';
+            //righe = document.getElementById('button').value;
+            //righe++;
+            //document.getElementById('button').value = righe;
+            //document.getElementById('button').innerHTML = 'Evadi Righe (' + righe + ')';
             document.getElementById('riga_' + text).style.backgroundColor = 'green';
+            document.getElementById('riga_' + text + '_counter').innerHTML = 'Righe in Evasione : ' + evadi[text];
         } else {
-            dorig = document.getElementById('DORIG').value;
-            if (dorig == '') {
-                $('#modal_noriga').modal('show');
-                return;
-            } else {
+
+            if (Object.keys(evadi).length > 0) {
 
                 $('#modal_conf_riga').modal('show');/*
                 $.ajax({
@@ -1278,10 +1272,12 @@
                         $('#modal_alertEvasa').modal('show');
                     location.reload();
                 });*/
+            } else {
+                $('#modal_noriga').modal('show');
+                return;
             }
         }
     }
-
 
     function evadi_articolo1() {
         dorig = document.getElementById('modal_controllo_dorig').value;
@@ -1420,7 +1416,6 @@
 
     }
 
-
     function cerca_articolo_codice(fornitore, codice, lotto, qta) {
 
 
@@ -1474,6 +1469,43 @@
         }
     }
 
+    function conferma_righe() {
+
+        cd_do = document.getElementById('doc_evadi').value;
+
+        cd_mg_p = document.getElementById('cd_mg_p').value;
+
+        if (cd_mg_p == '' || cd_mg_p == 'undefined' || cd_mg_p == undefined || cd_mg_p == null || cd_mg_p == 'Scegli il magazzino...')
+            cd_mg_p = 'ND';
+
+        cd_mg_a = document.getElementById('cd_mg_a').value;
+        if (cd_mg_a == '' || cd_mg_a == 'undefined' || cd_mg_a == undefined || cd_mg_a == null || cd_mg_a == 'Scegli il magazzino...')
+            cd_mg_a = 'ND';
+
+        dorig = JSON.stringify(evadi);
+        $.ajax({
+            url: "<?php echo URL::asset('ajax/conferma_righe') ?>/" + 'old' + "/" + cd_mg_a + "/" + cd_mg_p + "/" + cd_do,
+            data: evadi,
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+        }).done(function (result) {
+            location.reload();
+            if (result.length > 1)
+                $('#modal_alertQuantita0').modal('show');
+            else
+                $('#modal_alertEvasa').modal('show');
+        });
+    }
+
+    function stampa_doc() {
+        $.ajax({
+            url: "<?php echo URL::asset('ajax/stampe') ?>/<?php echo $id_dotes ?>"
+        }).done(function (result) {
+
+        });
+    }
+
+    // non so
     function controllo_articolo_smart2(codice) {
 
         testo = codice;
@@ -1517,10 +1549,10 @@
     function checkDoc() {
         segnalazioni = '<br>';
         <?php foreach ($documento->righe as $r){ ?>
-            articolo = $('#modal_Cd_AR_c_<?php echo $r->Id_DORig ?>').val();
-        quantita = $('#modal_Qta_c_<?php echo $r->Id_DORig ?>').val();
-        lotto = $('#modal_Cd_ARLotto_c_<?php echo $r->Id_DORig ?>').val();
-        quantita_evasa = $('#modal_QtaEvasa_c_<?php echo $r->Id_DORig ?>').val();
+            articolo = $('#modal_Cd_AR_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
+        quantita = $('#modal_Qta_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
+        lotto = $('#modal_Cd_ARLotto_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
+        quantita_evasa = $('#modal_QtaEvasa_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
         id_dorig = '00000';
         if (quantita_evasa != '0') {
             if (articolo != '' && quantita != '') {
@@ -1594,37 +1626,46 @@
         $(this).find('[autofocus]').focus();
     });
 
-    function evadi_articolo3() {
+    function segnalazione() {
+        Id_DoRig = document.getElementById('Segnala_riga').value;
+        Segnalazione = document.getElementById('Segnalazione').value;
 
-        cd_do = document.getElementById('modal_inserimento_flusso').value;
+        if (Id_DoRig != '') {
+            $.ajax({
+                url: "<?php echo URL::asset('ajax/segnalazione') ?>/<?php echo $id_dotes ?>/" + Id_DoRig + "/-" + encodeURIComponent(Segnalazione),
 
-        cd_mg_p = document.getElementById('cd_mg_p').value;
-
-        if (cd_mg_p == '' || cd_mg_p == 'undefined' || cd_mg_p == undefined || cd_mg_p == null || cd_mg_p == 'Scegli il magazzino...')
-            cd_mg_p = 'ND';
-
-        cd_mg_a = document.getElementById('cd_mg_a').value;
-        if (cd_mg_a == '' || cd_mg_a == 'undefined' || cd_mg_a == undefined || cd_mg_a == null || cd_mg_a == 'Scegli il magazzino...')
-            cd_mg_a = 'ND';
-
-        dorig = document.getElementById('DORIG').value;
-        $.ajax({
-            url: "<?php echo URL::asset('ajax/evadi_articolo3') ?>/" + dorig + "/" + cd_mg_a + "/" + cd_mg_p + "/" + cd_do,
-        }).done(function (result) {
-            if (result.length > 1)
-                $('#modal_alertQuantita0').modal('show');
-            else
-                $('#modal_alertEvasa').modal('show');
-            location.reload();
-        });
+            }).done(function (result) {
+            });
+        }
+        if (Id_DoRig != '') {
+            $.ajax({
+                url: "<?php echo URL::asset('ajax/invia_mail') ?>/<?php echo $id_dotes ?>/" + 2 + "/-" + Segnalazione
+            }).done(function (result) {
+                $('#modal_alertSegnalazione').modal('show');
+            });
+        }
     }
 
-    function stampa_doc() {
-        $.ajax({
-            url: "<?php echo URL::asset('ajax/stampe') ?>/<?php echo $id_dotes ?>"
-        }).done(function (result) {
+    function salva_documento() {
 
-        });
+        Cd_Do = 0;
+        Id_DoTes = '<?php echo $id_dotes ?>';
+        magazzino_A = 0;
+
+        if (Id_DoTes != '')
+            $.ajax({
+                url: "<?php echo URL::asset('ajax/salva_documento1') ?>/" + Id_DoTes + "/" + Cd_Do + "/" + magazzino_A
+
+            }).done(function (result) {
+
+
+                $('#modal_evadi_documento').modal('hide');
+                $('#modal_lista_salva').modal('show');
+                $('#ajax_lista_documenti_1').html(result);
+
+            });
+
     }
+
 </script>
 

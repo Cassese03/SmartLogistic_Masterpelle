@@ -32,10 +32,10 @@ class ArcaUtilsController extends Controller
 
     }
 
-    public static function aggiungi_articolo($id_ordine, $codice_articolo, $quantita, $magazzino_A, $fornitore = 0, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore)
+    public static function aggiungi_articolo($id_ordine, $codice, $quantita, $magazzino_A, $fornitore = 0, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore)
     {
         $lotto = '0';
-        $pedana = DB::select('SELECT * from ARLotto where Cd_AR =  \'' . $codice_articolo . '\' and Cd_ARLotto = \'' . $lotto . '\' ');
+        $pedana = DB::select('SELECT * from ARLotto where Cd_AR =  \'' . $codice . '\' and Cd_ARLotto = \'' . $lotto . '\' ');
         if (sizeof($pedana) != 0)
             $pedana = $pedana[0]->xCd_xPallet;
         else
@@ -63,7 +63,7 @@ class ArcaUtilsController extends Controller
             ('
                 SELECT Cd_AR,Descrizione,Cd_ARMisura
                 from AR
-                where Cd_AR = \'' . $codice_articolo . '\';
+                where Cd_AR = \'' . $codice . '\';
              ');
             $RIGA = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
             $id_dorig = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
@@ -75,6 +75,56 @@ class ArcaUtilsController extends Controller
             $RIGA++;
             if (sizeof($articoli) > 0) {
                 $articolo = $articoli[0];
+                $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                VR.Prezzo,
+                VR.Qta as QtaVariante,
+                VR.QtaRes,
+                VR.Ud_VR1,VR.Ud_VR2,
+                DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
+                ORDER BY TIMEINS DESC');
+                $xml = '<rows>';
+                foreach ($check_riga as $c)
+                    $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                $xml .= '</rows>';
+                $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                        (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                        VR.Prezzo,
+                        VR.Qta as QtaVariante,
+                        VR.QtaRes,
+                        VR.Ud_VR1,VR.Ud_VR2,
+                        DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ') and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $taglia . '\'
+                        and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $colore . '\'
+                        ORDER BY TIMEINS DESC');
+                if (sizeof($check_riga) > 0) {
+                    $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
+                    $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
+                    $x_update = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $check_riga[0]->QtaVariante . '" qtares="' . $check_riga[0]->QtaRes . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($check_riga[0]->QtaVariante + $quantita) . '" qtares="' . ($check_riga[0]->QtaRes + $quantita) . '" />', $xml);
+                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['Qta' => $check_riga[0]->Qta + $quantita]);
+                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga[0]->QtaEvadibile + $quantita]);
+                    ArcaUtilsController::calcola_totale_ordine($id_ordine);
+                    return;
+                }
+                $check_riga2 = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                        (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                        VR.Prezzo,
+                        VR.Qta as QtaVariante,
+                        VR.QtaRes,
+                        VR.Ud_VR1,VR.Ud_VR2,
+                        DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
+                        and DORig.Cd_AR = \'' . $codice . '\'
+                        ORDER BY TIMEINS DESC');
+                if (sizeof($check_riga2) > 0) {
+                    $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
+                    $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
+                    $x_update = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($quantita) . '" qtares="' . (+$quantita) . '" /></rows>', $xml);
+                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['Qta' => $check_riga2[0]->Qta + $quantita]);
+                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga2[0]->QtaEvadibile + $quantita]);
+                    ArcaUtilsController::calcola_totale_ordine($id_ordine);
+                    return;
+                }
                 if ($taglia != 'ND' && $colore != 'ND') {
                     $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
                     $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
@@ -101,13 +151,13 @@ class ArcaUtilsController extends Controller
                 if ($id_dotes[0]->Cd_LS_1 != '') {
                     $prezzo = DB::SELECT('SELECT * FROM LSRevisione WHERE Cd_LS = \'' . $id_dotes[0]->Cd_LS_1 . '\'');
                     if (sizeof($prezzo) != '0')
-                        $prezzo = DB::SELECT('SELECT * FROM LSArticolo WHERE Id_LSRevisione =\'' . $prezzo[0]->Id_LSRevisione . '\' and Cd_AR = \'' . $codice_articolo . '\' ');
+                        $prezzo = DB::SELECT('SELECT * FROM LSArticolo WHERE Id_LSRevisione =\'' . $prezzo[0]->Id_LSRevisione . '\' and Cd_AR = \'' . $codice . '\' ');
                     if (sizeof($prezzo) != '0')
                         $insert_righe_ordine['PrezzoUnitarioV'] = $prezzo[0]->Prezzo;
                 }
 
                 if ($insert_righe_ordine['PrezzoUnitarioV'] == '' || $id_dotes[0]->Cd_Do == 'TRM') {
-                    $prezzo = DB::SELECT('SELECT * FROM DORIG WHERE Cd_AR = \'' . $codice_articolo . '\' and Cd_DO =\'BC\' Order By Id_DORig DESC ');
+                    $prezzo = DB::SELECT('SELECT * FROM DORIG WHERE Cd_AR = \'' . $codice . '\' and Cd_DO =\'BC\' Order By Id_DORig DESC ');
                     if (sizeof($prezzo) == 0)
                         $insert_righe_ordine['PrezzoUnitarioV'] = '0';
                     else

@@ -350,7 +350,7 @@
                            href="<?php echo ($d->Cd_Do == 'TCC')? URL::asset('magazzino/carico2/'.$d->Cd_Do):URL::asset('magazzino/carico3/4383/'.$d->Cd_Do); ?>">
                             <div class="media-body">
                                 <h5><?php echo $d->Cd_Do; ?></h5>
-                                <p>Effettua un documento <?php echo $d->Cd_Do; ?> </p>
+                                <p><?php echo $d->Descrizione; ?> </p>
                             </div>
                         </a>
                     </li>

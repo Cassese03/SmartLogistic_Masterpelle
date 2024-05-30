@@ -403,7 +403,7 @@
                 <div class="row">
 
 
-                    <div class="col-sm-6 col-xl-12" style="margin-top:0px;">
+                    <div class="col-sm-12 col-xl-12" style="margin-top:0px;">
                         <ul class="list-group">
 
                                 <?php foreach ($documento->righe as $r){
@@ -414,14 +414,10 @@
                                     <div class="media-body">
                                         <div class="row">
                                             <div class="col-xs-6 col-sm-6 col-md-6">
-                                                <h5 <?php if ($r->QtaEvadibile == 0) echo 'style="color: red"' ?>><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
+                                                <h5 <?php if ($r->QtaRes == 0) echo 'style="color: red"' ?>><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
                                                     <br><?php echo 'Prezzo : ' . round(floatval($r->PrezzoUnitarioV), 2); ?>
-                                                    <br> Qta: <?php echo floatval($r->QtaEvadibile) ?>
-                                                                  <?php if ($r->x_VRData != '') {
-                                                            $variante = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,(SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,VR.Prezzo,VR.Qta FROM DORig outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE Id_DORig = ' . $r->Id_DORig . ' ORDER BY TIMEINS DESC')[0];
-                                                            echo '<br> Taglia : ' . $variante->Taglia . ' <br> Colore : ' . $variante->Colore;
-                                                        }
-                                                                  ?>
+                                                    <br> Qta: <?php echo floatval($r->QtaRes) ?>
+                                                    <?php echo '<br> Taglia : ' . $r->Taglia . ' <br> Colore : ' .$r->Colore;?>
                                                                   <?php /* echo  'Magazzino di Partenza: '.$r->Cd_MG_P;if($r->Cd_MGUbicazione_A != null) echo ' - '.$r->Cd_MGUbicazione_A;?><br><?php echo' Magazzino di Arrivo: '.$r->Cd_MG_A;?><br><?php if($r->Cd_ARLotto != Null)echo 'Lotto: '.$r->Cd_ARLotto;*/ ?>
                                                 </h5>
                                             </div>
@@ -768,7 +764,7 @@
                                required placeholder="Inserisci una Quantità" autocomplete="off" step="0.01">
                             <?php /*
                         <label>Quantita Evadibile</label>
-                        <input class="form-control" type="number" name="QtaEvadibile" value="<?php echo floatval($r->QtaEvadibile) ?>" required placeholder="Inserisci una Quantità" autocomplete="off" step="0.01">
+                        <input class="form-control" type="number" name="QtaRes" value="<?php echo floatval($r->QtaRes) ?>" required placeholder="Inserisci una Quantità" autocomplete="off" step="0.01">
                         <label>Prezzo</label>
                         <input class="form-control" type="number" name="PrezzoUnitarioV" value="<?php echo floatval($r->PrezzoUnitarioV) ?>" required placeholder="Inserisci un Prezzo" autocomplete="off" step="0.01" >
 */ ?>

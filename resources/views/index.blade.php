@@ -1,10 +1,11 @@
-<?php  $utente = session('utente');?>
-<!doctype html>
+<?php $utente = session('utente'); ?>
+    <!doctype html>
 <html lang="en" class="md">
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
     <link rel="apple-touch-icon" href="img/icona_arca.png">
     <link rel="icon" href="img/icona_arca.png">
     <link rel="stylesheet" href="vendor/bootstrap-4.1.3/css/bootstrap.min.css">
@@ -16,7 +17,16 @@
 
 <body class="color-theme-blue push-content-right theme-light">
 <div class="loader justify-content-center ">
-    <div class="maxui-roller align-self-center"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <div class="maxui-roller align-self-center">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
 </div>
 <div class="wrapper">
 
@@ -25,24 +35,26 @@
         <div class="page-content">
             <div class="content-sticky-footer">
 
-                <div class="row" style="height:750px;overflow-y: none;">
-                    <div class="col-md-6">
-                        <div class="background bg-250" style="height:100%;" ><img src="img/background.png" alt="" style="height:100%;" > </div>
+                <div class="row" style="height:100vh;overflow-y: none;">
+                    <div class="col-md-12 col-xl-6">
+                        <div class="background bg-250" style="height:100%;"><img src="img/background.png" alt=""
+                                                                                 style="height:100%;"></div>
                         <div class="w-100">
-                            <h6 style="float: right;color: white">Accesso effettuato da : <?php echo $utente->Cd_Operatore ?></h6>
+                            <h6 style="float: right;color: white">Accesso effettuato da
+                                : <?php echo $utente->Cd_Operatore ?></h6>
                             <img src="img/logo_arca.png" style="width:80%;padding:10%;margin:0 auto;display:block;">
 
                             <h1 class="text-center text-white title-background" style="margin-top:0">
-                                <small>Arca Logistic<br></small>
-                                <?php  echo $ditta->RagioneSociale ?></h1>
+                                <small>Smart Logistic<br></small>
+                                <?php echo $ditta->RagioneSociale ?></h1>
 
                         </div>
                     </div>
 
-                    <div class="col-md-6" style="padding-left:0;">
+                    <div class="col-md-12 col-xl-6" style="padding-left:0;">
 
-                        <ul class="list-group" >
-                            <li class="list-group-item">
+                        <ul class="list-group">
+                            {{--<li class="list-group-item">
 
                                 <a href="<?php echo URL::ASSET('articoli') ?>" class="media">
                                     <div class="media-body">
@@ -57,6 +69,14 @@
                                     <div class="media-body">
                                         <h5>Magazzino</h5>
                                         <p>Gestisci il Magazzino di Arca</p>
+                                    </div>
+                                </a>
+                            </li>--}}
+                            <li class="list-group-item">
+                                <a href="<?php echo URL::asset('scegli_doc') ?>" class="media">
+                                    <div class="media-body">
+                                        <h5>Scegli Documento</h5>
+                                        <p>Scegli il documento da lavorare.</p>
                                     </div>
                                 </a>
                             </li>
@@ -102,7 +122,7 @@
                                     </div>
                                 </a>
                             </li>
-                        <!--
+                            <!--
                             <li class="list-group-item">
                                 <a href="<?php echo URL::asset('ordini') ?>" class="media">
                                     <div class="media-body">
@@ -134,8 +154,6 @@
 </div>
 
 
-
-
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Popper.js, then Bootstrap JS -->
 <script src="js/jquery-3.2.1.min.js"></script>
@@ -159,7 +177,7 @@
 
 <!-- page specific script -->
 <script>
-    $(window).on('load', function() {
+    $(window).on('load', function () {
         /* sparklines */
         $(".dynamicsparkline").sparkline([5, 6, 7, 2, 0, 4, 2, 5, 6, 7, 2, 0, 4, 2, 4], {
             type: 'bar',
@@ -198,7 +216,7 @@
             }
         });
         /* tooltip */
-        $(function() {
+        $(function () {
             $('[data-toggle="tooltip"]').tooltip()
         });
     });

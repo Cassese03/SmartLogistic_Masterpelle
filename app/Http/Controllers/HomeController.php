@@ -284,26 +284,32 @@ class HomeController extends Controller
         if (!session()->has('utente')) {
             return Redirect::to('login');
         }
+        return Redirect::to('scegli_doc');
 
         $documenti = DB::SELECT('SELECT * FROM DO Where Cd_DO in (\'INV\',\'TRF\',\'TSC\',\'TSI\',\'TSS\',\'TCC\') ');
 
         return View::make('magazzino', compact('documenti'));
     }
 
-    public function passivi()
+    public function scegli_doc($produttore = 0, $tipo = 0, $stagione = 0)
     {
         if (!session()->has('utente')) {
             return Redirect::to('login');
         }
-        $documenti = DB::select('SELECT * FROM DO WHERE Cd_Do in (\'DCF\',\'OAF\',\'ROF\') and CliFor = \'F\'');
-        return View::make('passivi', compact('documenti'));
-    }
+        if ($produttore == 0 && $tipo == 0 && $stagione == 0) {
+            $documenti = DB::SELECT('SELECT * FROM DO Where DescrizioneBreve = \'nesusno\'');
+        }
+        if ($produttore != 0 && $tipo == 0 && $stagione == 0) {
+            $documenti = DB::SELECT('SELECT * FROM DO Where DescrizioneBreve = \'' . $produttore . '\'');
+        }
+        if ($produttore != 0 && $tipo != 0 && $stagione == 0) {
+            $documenti = DB::SELECT('SELECT * FROM DO Where DescrizioneBreve = \'' . $produttore . '-' . $tipo . '\'');
+        }
+        if ($produttore != 0 && $tipo != 0 && $stagione != 0) {
+            $documenti = DB::SELECT('SELECT * FROM DO Where DescrizioneBreve = \'' . $produttore . '-' . $tipo . '-' . $stagione . '\'');
+        }
 
-    public function attivo()
-    {
-
-        $documenti = DB::select('SELECT * FROM DO WHERE Cd_DO in (\'PRV\',\'OVC\',\'DDT\') and CliFor = \'C\'');
-        return View::make('attivo', compact('documenti'));
+        return View::make('scegli_doc', compact('documenti', 'produttore', 'tipo', 'stagione'));
     }
 
     public function carico_magazzino()
@@ -411,142 +417,6 @@ class HomeController extends Controller
         }
     }
 
-    /*
-        public function trasporto_fornitore($documenti){
-
-            $fornitore = DB::select('SELECT * FROM Cf where Cd_CF in (\'F000143\',\'F000765\') Order By Id_Cf DESC');
-
-            return View::make('trasporto_fornitore',compact('fornitore','documenti'));
-        }
-        public function trasporto_documento($cd_do,$cd_cf){
-
-            $documenti = DB::SELECT('SELECT TOP 10 [NumeroDoc],[DataDoc],[Id_DoTes] FROM DoTes where Cd_DO=\''.$cd_do.'\' and Cd_CF = \''.$cd_cf.'\' order by NumeroDoc desc');
-            $numero_documento = DB::select('SELECT MAX(numeroDoc)+1 as num from DOTes where Cd_Do = \''.$cd_do.'\'')[0]->num;
-
-
-            return View::make('trasporto_documento',compact('documenti', 'cd_do','numero_documento','cd_cf'));
-        }
-        public function trasporto_documento_tot($cd_do,$cd_cf){
-
-        $documenti = DB::SELECT('SELECT * FROM DoTes where Cd_DO=\''.$cd_do.'\' and Cd_CF = \''.$cd_cf.'\' order by NumeroDoc desc');
-        $numero_documento = DB::select('SELECT MAX(numeroDoc)+1 as num from DOTes where Cd_Do = \''.$cd_do.'\'')[0]->num;
-
-
-        return View::make('trasporto_documento_tot',compact('documenti', 'cd_do','numero_documento','cd_cf'));
-    }
-        public function trasporto_magazzino($documenti,$Cd_Cf,$Id_DoTes){
-
-            $articoli = DB::select('SELECT TOP 10 ar.[Id_AR],ar.[Cd_AR],ar.[Descrizione],ARLotto.[Cd_ARLotto] FROM AR LEFT JOIN ARLotto ON ar.Cd_AR = ARLotto.Cd_AR Order By Id_AR DESC');
-
-            return View::make('trasporto',compact('articoli','documenti','Cd_Cf', 'Id_DoTes'));
-        }
-
-        public function trasporto_magazzino2($Cd_AR,$cd_do,$Cd_Cf,$Id_DoTes,$lotto){
-
-            $where=' and ';
-            if($lotto!='0')
-            {
-                $where .= 'MGMov.Cd_ARLotto = \''.$lotto .'\' and ';
-            }
-            $default  = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza,MGMov.Cd_MGUbicazione, m.Cd_Mg , m.Descrizione, MGMov.Cd_ARLotto FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' '.$where.' Mgmov.Cd_MG in (select Cd_MG_P from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione, MGMov.Cd_ARLotto ORDER BY Giacenza DESC');
-
-            $giacenza = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza,MGMov.Cd_MGUbicazione, m.Cd_Mg , m.Descrizione, MGMov.Cd_ARLotto FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' '.$where.' Mgmov.Cd_MG !=(select Cd_MG_P from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione, MGMov.Cd_ARLotto ORDER BY Giacenza DESC  ');
-
-
-            return View::make('trasporto_magazzino2',compact('Cd_AR','cd_do','Cd_Cf','giacenza','default', 'Id_DoTes','lotto'));
-
-        }
-        public function trasporto_magazzino2_tot($Cd_AR,$cd_do,$Cd_Cf,$Id_DoTes,$lotto){
-
-            $where=' and ';
-            if($lotto!='0')
-            {
-                $where .= 'MGMov.Cd_ARLotto = \''.$lotto .'\' and ';
-            }
-
-            $default  = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza,MGMov.Cd_MGUbicazione, m.Cd_Mg , m.Descrizione, MGMov.Cd_ARLotto FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' '.$where.' Mgmov.Cd_MG in (select Cd_MG_P from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione, MGMov.Cd_ARLotto ORDER BY Giacenza DESC');
-
-            $giacenza = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza,MGMov.Cd_MGUbicazione, m.Cd_Mg , m.Descrizione, MGMov.Cd_ARLotto FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' '.$where.' Mgmov.Cd_MG !=(select Cd_MG_P from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione, MGMov.Cd_ARLotto ORDER BY Giacenza DESC  ');
-
-
-            return View::make('trasporto_magazzino2_tot',compact('Cd_AR','cd_do','Cd_Cf','giacenza','default', 'Id_DoTes','lotto'));
-
-        }
-        public function trasporto_magazzino3($Cd_AR,$cd_do,$Cd_Cf,$Cd_MG,$Cd_MGUbicazione,$Cd_ARLotto,$Id_DoTes){
-
-            $where = '';
-
-            $default  = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza, m.Cd_Mg , m.Descrizione , MGMov.Cd_MGUbicazione FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' and   (MGMov.Cd_MGUbicazione!=\''.$Cd_MGUbicazione.'\' or mgmov.Cd_MGUbicazione is null)and m.Cd_MG in (select Cd_MG_A from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione ORDER BY Giacenza asc');
-            foreach($default as $g) { if($g->Cd_MGUbicazione != null){$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione !=\''.$g->Cd_MGUbicazione.'\')  ';}else {$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione != \'0\' )  ';}}
-            $default1 = DB::select('SELECT  m.Cd_Mg , m.Descrizione, MGUbicazione.Cd_MGUbicazione  FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg LEFT JOIN MGUbicazione ON MGMov.Cd_MG = MGUbicazione.Cd_Mg WHERE MGMov.Cd_AR != \'' . $Cd_AR . '\' '.$where.'  and m.Cd_MG in (select Cd_MG_A from MGCausale where Cd_MGCausale=\''.$cd_do.'\') GROUP BY m.cd_mg,m.Descrizione,MGUbicazione.Cd_MGUbicazione ORDER BY m.cd_mg ASC');
-
-
-            $giacenza = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza, m.Cd_Mg , m.Descrizione , MGMov.Cd_MGUbicazione FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' and m.Cd_MG !=\''.$Cd_MG.'\'and (MGMov.Cd_MGUbicazione!=\''.$Cd_MGUbicazione.'\' or MGMov.Cd_MGUbicazione is null) GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione ORDER BY Giacenza asc');
-
-            foreach($giacenza as $g) { if($g->Cd_MGUbicazione != null){$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione !=\''.$g->Cd_MGUbicazione.'\')  ';}else {$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione != \'0\' )  ';}}
-
-            $magazzini = DB::select('SELECT  m.Cd_Mg , m.Descrizione, MGUbicazione.Cd_MGUbicazione  FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg LEFT JOIN MGUbicazione ON MGMov.Cd_MG = MGUbicazione.Cd_Mg WHERE MGMov.Cd_AR != \'' . $Cd_AR . '\' '.$where.' and m.Cd_MG != \''.$Cd_MG.'\'  GROUP BY m.cd_mg,m.Descrizione,MGUbicazione.Cd_MGUbicazione ORDER BY m.cd_mg ASC');
-
-
-            return View::make('trasporto_magazzino3',compact('Cd_AR','Cd_MG','cd_do','Cd_Cf','giacenza','Cd_MGUbicazione','magazzini','Cd_ARLotto','default','default1', 'Id_DoTes'));
-
-        }
-        public function trasporto_magazzino3_tot($Cd_AR,$cd_do,$Cd_Cf,$Cd_MG,$Cd_MGUbicazione,$Cd_ARLotto,$Id_DoTes){
-
-            $where = '';
-
-            $default  = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza, m.Cd_Mg , m.Descrizione , MGMov.Cd_MGUbicazione FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' and   (MGMov.Cd_MGUbicazione!=\''.$Cd_MGUbicazione.'\' or mgmov.Cd_MGUbicazione is null)and m.Cd_MG in (select Cd_MG_A from MGCausale where Cd_MGCausale=\''.$cd_do.'\')GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione ORDER BY Giacenza asc');
-            foreach($default as $g) { if($g->Cd_MGUbicazione != null){$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione !=\''.$g->Cd_MGUbicazione.'\')  ';}else {$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione != \'0\' )  ';}}
-            $default1 = DB::select('SELECT  m.Cd_Mg , m.Descrizione, MGUbicazione.Cd_MGUbicazione  FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg LEFT JOIN MGUbicazione ON MGMov.Cd_MG = MGUbicazione.Cd_Mg WHERE MGMov.Cd_AR != \'' . $Cd_AR . '\' '.$where.'  and m.Cd_MG in (select Cd_MG_A from MGCausale where Cd_MGCausale=\''.$cd_do.'\') GROUP BY m.cd_mg,m.Descrizione,MGUbicazione.Cd_MGUbicazione ORDER BY m.cd_mg ASC');
-
-
-            $giacenza = DB::select('SELECT SUM(MGMov.QuantitaSign) as Giacenza, m.Cd_Mg , m.Descrizione , MGMov.Cd_MGUbicazione FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg WHERE MGMov.Cd_AR = \''.$Cd_AR.'\' and m.Cd_MG !=\''.$Cd_MG.'\'and (MGMov.Cd_MGUbicazione!=\''.$Cd_MGUbicazione.'\' or MGMov.Cd_MGUbicazione is null) GROUP BY m.cd_mg,m.Descrizione,MGMov.Cd_MGUbicazione ORDER BY Giacenza asc');
-
-            foreach($giacenza as $g) { if($g->Cd_MGUbicazione != null){$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione !=\''.$g->Cd_MGUbicazione.'\')  ';}else {$where.=' and (m.Cd_MG != \''.$g->Cd_Mg.'\' or MGUbicazione.Cd_MGUbicazione != \'0\' )  ';}}
-
-            $magazzini = DB::select('SELECT  m.Cd_Mg , m.Descrizione, MGUbicazione.Cd_MGUbicazione  FROM MGMov LEFT JOIN MG m ON m.Cd_MG = MGMov.Cd_Mg LEFT JOIN MGUbicazione ON MGMov.Cd_MG = MGUbicazione.Cd_Mg WHERE MGMov.Cd_AR != \'' . $Cd_AR . '\' '.$where.' and m.Cd_MG != \''.$Cd_MG.'\'  GROUP BY m.cd_mg,m.Descrizione,MGUbicazione.Cd_MGUbicazione ORDER BY m.cd_mg ASC');
-
-
-            return View::make('trasporto_magazzino3_tot',compact('Cd_AR','Cd_MG','cd_do','Cd_Cf','giacenza','Cd_MGUbicazione','magazzini','Cd_ARLotto','default','default1', 'Id_DoTes'));
-
-        }
-
-        public function trasporto_magazzino4($Cd_Do,$Cd_Cf,$Cd_MG,$Cd_Mg_A,$Id_DoTes, request $request){
-
-            $dati = $request->all();
-            if(isset($dati['elimina_riga'])){
-                DB::table('DoRig')->where('Id_DORig',$dati['Id_DORig'])->delete();
-            }
-            if(isset($dati['modifica_riga'])){
-
-                unset($dati['modifica_riga']);
-                $id_riga = $dati['Id_DORig'];
-                $dati['QtaEvadibile']=$dati['Qta'];
-                unset($dati['Id_DORig']);
-
-
-                DB::table('DoRig')->where('Id_DORig',$id_riga)->update($dati);
-
-                DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $Id_DoTes");
-                DB::statement("exec asp_DO_End $Id_DoTes");
-            }
-
-
-
-            $doc = DB::Select('SELECT * FROM DoRig where Id_DoTes = \''.$Id_DoTes.'\'');
-
-            if(sizeof($doc) > 0) {
-                $Cd_Cf = DB::SELECT('SELECT * FROM CF WHERE Cd_CF = \''.$Cd_Cf.'\' ')[0];
-                $docu = $doc[0];
-                $docu->righe = DB::select('SELECT * from DORig where Id_DoTes = \'' . $Id_DoTes . '\'');
-                return View::make('trasporto_magazzino4', compact( 'Cd_Do', 'Cd_Cf', 'Cd_MG',  'Cd_Mg_A', 'Id_DoTes', 'doc','docu'));
-
-            }
-            $Cd_Cf = DB::SELECT('SELECT * FROM CF WHERE Cd_CF = \''.$Cd_Cf.'\' ')[0];
-                return View::make('trasporto_magazzino4', compact( 'Cd_Do', 'Cd_Cf', 'Cd_MG',  'Cd_Mg_A',  'Id_DoTes', 'doc'));
-
-    }
-    */
     public function carico_magazzino4($id_fornitore, $id_dotes, Request $request)
     {
         if (!session()->has('utente')) {
@@ -554,9 +424,19 @@ class HomeController extends Controller
         }
         $dati = $request->all();
         if (isset($dati['change_mg_session'])) {
-            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'],)]);
+            if (isset($dati['doc_evadi'])) {
+                $check_mg = DB::SELECT('SELECT * FROM MGCausale where Cd_MGCausale = (select Cd_MGCausale from do where Cd_Do =  \'' . $dati['doc_evadi'] . '\')');
+                if (sizeof($check_mg) > 0) {
+                    if ($check_mg[0]->Cd_MG_A != null)
+                        $dati['cd_mg_a'] = $check_mg[0]->Cd_MG_A;
+                    if ($check_mg[0]->Cd_MG_P != null)
+                        $dati['cd_mg_p'] = $check_mg[0]->Cd_MG_P;
+                }
+            }
+
+            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'], 'doc_evadi' => $dati['doc_evadi'])]);
             session()->save();
-            return Redirect::to('magazzino/carico4/'.$id_fornitore.'/'.$id_dotes);
+            return Redirect::to('magazzino/carico4/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['elimina_riga'])) {
             DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
@@ -596,7 +476,12 @@ class HomeController extends Controller
             $fornitore = $fornitori[0];
             $date = date('d/m/Y', strtotime('today'));
             foreach ($documenti as $documento)
-                $documento->righe = DB::select('SELECT * from DORig where Id_DoTes in (' . $id_dotes . ') and Qta > \'0\' ORDER BY TimeIns DESC');
+                $documento->righe = DB::select('SELECT
+                (SELECT Alias from x_ARVRAlias WHERE Cd_AR = DORig.Cd_AR and Ud_VR1 = VR.Ud_VR1 and Ud_VR2 = VR.Ud_VR2) AS xAlias,
+                (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                VR.Prezzo,
+                VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\' ORDER BY TimeIns DESC');
 
             foreach ($documento->righe as $r) {
                 $r->lotti = DB::select('SELECT * FROM ARLotto WHERE Cd_AR = \'' . $r->Cd_AR . '\' AND DataScadenza > \'' . $date . '\' ORDER BY TimeIns DESC');
@@ -614,9 +499,9 @@ class HomeController extends Controller
             $magazzini = DB::SELECT('SELECT * from MG');
             if (!session()->has('\'' . $id_dotes . '\'')) {
                 if ($magazzini_selected > 0) {
-                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P,);
+                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P, 'doc_evadi' => '');
                 } else {
-                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '',);
+                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '', 'doc_evadi' => '');
                 }
                 session(['\'' . $id_dotes . '\'' => $session]);
                 session()->save();
@@ -635,10 +520,11 @@ class HomeController extends Controller
         }
         $dati = $request->all();
         if (isset($dati['change_mg_session'])) {
-            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'],)]);
+
+            session(['\'' . $id_dotes . '\'' => array('cd_mg_a' => $dati['cd_mg_a'], 'cd_mg_p' => $dati['cd_mg_p'], 'doc_evadi' => '')]);
             session()->save();
 
-            return Redirect::to('magazzino/carico04/'.$id_fornitore.'/'.$id_dotes);
+            return Redirect::to('magazzino/carico04/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['elimina_riga'])) {
             DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
@@ -678,7 +564,11 @@ class HomeController extends Controller
             $fornitore = $fornitori[0];
             $date = date('d/m/Y', strtotime('today'));
             foreach ($documenti as $documento)
-                $documento->righe = DB::select('SELECT * from DORig where Id_DoTes in (' . $id_dotes . ') and Qta > \'0\'  ORDER BY TimeIns DESC');
+                $documento->righe = DB::select('SELECT
+                                                        (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                                                        (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                                                        VR.Prezzo,
+                                                        VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\'  ORDER BY TimeIns DESC');
 
             foreach ($documento->righe as $r) {
                 $r->lotti = DB::select('SELECT * FROM ARLotto WHERE Cd_AR = \'' . $r->Cd_AR . '\'  AND DataScadenza > \'' . $date . '\' ORDER BY TimeIns DESC ');
@@ -696,9 +586,9 @@ class HomeController extends Controller
             $magazzini = DB::SELECT('SELECT * from MG');
             if (!session()->has('\'' . $id_dotes . '\'')) {
                 if ($magazzini_selected > 0) {
-                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P,);
+                    $session = array('cd_mg_a' => $magazzini_selected[0]->Cd_MG_A, 'cd_mg_p' => $magazzini_selected[0]->Cd_MG_P, 'doc_evadi' => '');
                 } else {
-                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '',);
+                    $session = array('cd_mg_a' => '', 'cd_mg_p' => '', 'doc_evadi' => '');
                 }
                 session(['\'' . $id_dotes . '\'' => $session]);
                 session()->save();

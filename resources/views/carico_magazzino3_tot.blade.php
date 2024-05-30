@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
     <link rel="apple-touch-icon" href="/img/icona_arca.png">
     <link rel="icon" href="/img/icona_arca.png">
     <link rel="stylesheet" href="/vendor/bootstrap-4.1.3/css/bootstrap.min.css">
@@ -15,7 +16,16 @@
 
 <body class="color-theme-blue push-content-right theme-light">
 <div class="loader justify-content-center ">
-    <div class="maxui-roller align-self-center"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <div class="maxui-roller align-self-center">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
 </div>
 <div class="wrapper">
 
@@ -24,20 +34,26 @@
         <form class="searchcontrol">
             <div class="input-group">
                 <div class="input-group-prepend">
-                    <button type="button" class="input-group-text close-search"><i class="material-icons">keyboard_backspace</i></button>
+                    <button type="button" class="input-group-text close-search"><i class="material-icons">keyboard_backspace</i>
+                    </button>
                 </div>
-                <input type="text" id="cerca" class="form-control border-0" placeholder="Cerca Fornitore..." aria-label="Username"  autocomplete="off">
+                <input type="text" id="cerca" class="form-control border-0" placeholder="Cerca Fornitore..."
+                       aria-label="Username" autocomplete="off">
             </div>
         </form>
         <header class="row m-0 fixed-header">
             <div class="left">
-                    <a style="padding-left:20px;" href=<?php if($cd_do == 'OF')echo "/magazzino/carico02/OF";else echo "/magazzino/carico2/$cd_do"?> ><i class="material-icons">arrow_back_ios</i></a>
+                <a style="padding-left:20px;"
+                   href=<?php if ($cd_do == 'OF') echo "/magazzino/carico02/OF"; else echo "/magazzino/carico2/$cd_do" ?> ><i
+                        class="material-icons">arrow_back_ios</i></a>
             </div>
             <div class="col center">
-                <a href="#" class="logo"><figure><img src="/img/logo_arca.png" alt=""></figure>Documenti (<?php echo $cd_do ?>)</a>
+                <a href="#" class="logo">
+                    <figure><img src="/img/logo_arca.png" alt=""></figure>
+                    Documenti (<?php echo $cd_do ?>)</a>
             </div>
             <div class="right">
-                <a style="padding-left:20px;" href="/" ><i class="material-icons">home</i></a>
+                <a style="padding-left:20px;" href="/"><i class="material-icons">home</i></a>
             </div>
         </header>
 
@@ -46,38 +62,50 @@
 
                 <div class="background bg-125"><img src="/img/background.png" alt=""></div>
                 <div class="w-100">
-                    <h1 class="text-center text-white title-background">Lista Documenti (<?php echo $cd_do ?>)<br><small><?php echo $fornitore->Descrizione ?></small></h1>
+                    <h1 class="text-center text-white title-background">Lista Documenti (<?php echo $cd_do ?>
+                        )<br><small><?php echo $fornitore->Descrizione ?></small></h1>
                 </div>
 
                 <div class="row mx-0" style="margin-bottom:10px;">
                     <div class="col-12">
-                        <a href="#" class="btn btn-success btn-sm" style="width:100%" onclick="apri_modal_documento();">+ Crea Nuovo Documento</a>
+                        <a href="#" class="btn btn-success btn-sm" style="width:100%" onclick="apri_modal_documento();">+
+                            Crea Nuovo Documento</a>
                     </div>
                 </div>
 
                 <ul class="list-group" id="ajax" style="max-height:500px;">
 
-                    <?php  foreach($documenti as $do){ ?>
+                    <?php foreach ($documenti as $do){ ?>
 
                     <li class="list-group-item">
-                        <a href="/magazzino/carico4/<?php echo $fornitore->Id_CF ?>/<?php echo $do->Id_DoTes ?>" class="media">
+                        <a href="/magazzino/carico4/<?php echo $fornitore->Id_CF ?>/<?php echo $do->Id_DoTes ?>"
+                           class="media">
                             <div class="media-body">
                                 <div>
-                                    <h5 style="text-align:left;float:left"><?php echo $cd_do ?> N.<?php echo $do->NumeroDoc ?> Del <?php echo date('d/m/Y',strtotime($do->DataDoc)) ?></h5>
-                                    <input type="checkbox" id="check"  style="height: 30px;width: 30px;text-align:right;float:right" class="form-control" onclick="redirect_plus('<?php echo $do->Id_DoTes?>')">
+                                    <h5 style="text-align:left;float:left"><?php echo $cd_do ?>
+                                        N.<?php echo $do->NumeroDoc ?>
+                                        Del <?php echo date('d/m/Y', strtotime($do->DataDoc)) ?></h5>
+                                    <input type="checkbox" id="check"
+                                           style="height: 30px;width: 30px;text-align:right;float:right"
+                                           class="form-control" onclick="redirect_plus('<?php echo $do->Id_DoTes?>')">
                                 </div>
                                 <br>
-                                <p>Codice: <?php echo $do->NumeroDocRif ?> del <?php echo date('d/m/Y',strtotime($do->DataDocRif)) ?></p>
+                                <p>Codice: <?php echo $do->NumeroDocRif ?>
+                                    del <?php echo date('d/m/Y', strtotime($do->DataDocRif)) ?></p>
 
                             </div>
                         </a>
                     </li>
                     <input type="hidden" id="iddotes">
 
-                    <?php } if(sizeof($documenti)==10){ ?>
-                    <button type="button"  class="btn btn-success btn-sm" style="width:100%;background-color: red" onclick="gotobolla()"> Mostra Tutti i Documenti</button>
+                    <?php } if (sizeof($documenti) == 10){ ?>
+                    <button type="button" class="btn btn-success btn-sm" style="width:100%;background-color: red"
+                            onclick="gotobolla()"> Mostra Tutti i Documenti
+                    </button>
                     <?php } ?>
-                    <button type="button"  class="btn btn-success btn-sm" style="width:100%;background-color: red" onclick="redirect_plus('1')"> Visualizza più evasioni</button>
+                    <button type="button" class="btn btn-success btn-sm" style="width:100%;background-color: red"
+                            onclick="redirect_plus('1')"> Visualizza più evasioni
+                    </button>
 
                 </ul>
 
@@ -103,15 +131,20 @@
                 <div class="modal-body">
                     <h3>Fornitore:<br><small><?php echo $fornitore->Descrizione ?></small></h3>
                     <label>Numero Documento</label>
-                    <input class="form-control" type="number" placeholder="Inserisci Numero Documento" id="NumeroDoc" value="<?php echo $numero_documento ?>" readonly>
-                    <label>Data Documento</label>
-                    <input class="form-control" type="text" placeholder="Data Del Documento" id="DataDoc" value="<?php echo date('Y-m-d') ?>" readonly>
+                    <input class="form-control" type="number" placeholder="Inserisci Numero Documento" id="NumeroDoc"
+                           value="<?php echo ($numero_documento) ? $numero_documento:1; ?>" readonly>
+                    <label>Data
+                        Documento</label>
+                    <input class="form-control" type="text" placeholder="Data Del Documento" id="DataDoc"
+                           value="<?php echo date('Y-m-d') ?>" readonly>
 
                     <label>Numero Documento Rif</label>
-                    <input class="form-control" type="text" placeholder="Inserisci Numero Documento Del Fornitore" id="NumeroDocRif" value=""  autocomplete="off">
+                    <input class="form-control" type="text" placeholder="Inserisci Numero Documento Del Fornitore"
+                           id="NumeroDocRif" value="" autocomplete="off">
 
                     <label>Data Documento Rif</label>
-                    <input class="form-control" type="date" placeholder="Data Del Documento" id="DataDocRif" value=""  autocomplete="off">
+                    <input class="form-control" type="date" placeholder="Data Del Documento" id="DataDocRif" value=""
+                           autocomplete="off">
 
                 </div>
 
@@ -148,34 +181,35 @@
 </html>
 
 <script type="text/javascript">
-    function gotobolla(){
-        top.location.href = "/magazzino/carico3/<?php echo $fornitore->Id_CF?>/<?php echo $cd_do?>";
+    function gotobolla() {
+        top.location.href = "/magazzino/carico3/<?php echo $fornitore->Id_CF ?>/<?php echo $cd_do ?>";
 
     }
-    function apri_modal_documento(){
+
+    function apri_modal_documento() {
         $('#modal_documento').modal('show');
     }
 
-    function redirect_plus(int){
+    function redirect_plus(int) {
 
-        if(int!='1'){
+        if (int != '1') {
             text = document.getElementById("iddotes").value;
             position = text.search(int);
-            if(position!='-1')
-                document.getElementById("iddotes").value = text.replace(","+int, "");
-            if(position=='-1')
-                document.getElementById('iddotes').value = document.getElementById('iddotes').value+","+int;
-        }
-        else {
+            if (position != '-1')
+                document.getElementById("iddotes").value = text.replace("," + int, "");
+            if (position == '-1')
+                document.getElementById('iddotes').value = document.getElementById('iddotes').value + "," + int;
+        } else {
             dotes = document.getElementById('iddotes').value;
             dotes = dotes.substr(1);
-            if(dotes == '')
+            if (dotes == '')
                 alert('Nessun Documento Selezionato');
             else
-                top.location.href = "/magazzino/carico4/<?php echo $fornitore->Id_CF ?>/"+dotes;
+                top.location.href = "/magazzino/carico04/<?php echo $fornitore->Id_CF ?>/" + dotes;
         }
     }
-    function crea_documento(){
+
+    function crea_documento() {
 
         numero = $('#NumeroDoc').val();
         data = $('#DataDoc').val();
@@ -187,13 +221,13 @@
         if (data_rif == '')
             data_rif = '0';
 
-        if(numero != '' && data != ''){
+        if (numero != '' && data != '') {
 
             $.ajax({
-                url: "<?php echo URL::asset('ajax/crea_documento_rif') ?>/<?php echo $fornitore->Cd_CF ?>/<?php echo $cd_do ?>/"+numero+"/"+data+"/"+numero_rif+"/"+data_rif
-            }).done(function(result) {
+                url: "<?php echo URL::asset('ajax/crea_documento_rif') ?>/<?php echo $fornitore->Cd_CF ?>/<?php echo $cd_do ?>/" + numero + "/" + data + "/" + numero_rif + "/" + data_rif
+            }).done(function (result) {
                 $('#modal_alertDocumento').modal('show');
-                top.location.href = "/magazzino/carico4/<?php echo $fornitore->Id_CF ?>/"+result;
+                top.location.href = "/magazzino/carico04/<?php echo $fornitore->Id_CF ?>/" + result;
 
             });
 
