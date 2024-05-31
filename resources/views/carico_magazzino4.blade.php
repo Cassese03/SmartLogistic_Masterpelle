@@ -438,7 +438,7 @@
                                     <div class="media-body">
                                         <div class="row">
                                             <div class="col-xs-12 col-sm-12 col-md-12">
-                                                <h5 style="text-align: center;color: white;"
+                                                <h5 style="text-align: center;color: blue;"
                                                     id="riga_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>_counter">
                                                 </h5>
                                                 <h5 style="text-align:center<?php if ($r->QtaRes == 0) echo ';color: red' ?>"><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
@@ -1256,7 +1256,11 @@
             //righe++;
             //document.getElementById('button').value = righe;
             //document.getElementById('button').innerHTML = 'Evadi Righe (' + righe + ')';
-            document.getElementById('riga_' + text).style.backgroundColor = 'green';
+            if (parseInt(evadi[text]) == parseInt(max_evasione))
+                document.getElementById('riga_' + text).style.backgroundColor = 'green';
+            else
+                document.getElementById('riga_' + text).style.backgroundColor = 'yellow';
+
             document.getElementById('riga_' + text + '_counter').innerHTML = 'Righe in Evasione : ' + evadi[text];
         } else {
 
