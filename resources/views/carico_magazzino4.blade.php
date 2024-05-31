@@ -629,7 +629,7 @@
 
                     <label>Quantita</label>
                     <input class="form-control" type="text" id="modal_controllo_quantita" value="" autocomplete="off"
-                           readonly>
+                           @if(substr($documento->Cd_Do,0,1) != 'O') readonly @endif>
 
                     <input class="form-control" type="hidden" id="modal_controllo_lotto" value="" autocomplete="off"
                            readonly>
@@ -1230,17 +1230,22 @@
             find2 = document.getElementById('modal_controllo_dorig_tc').value;
             dorig = document.getElementById('DORIG').value;
             max_evasione = document.getElementById('qta_max_evad_' + text).value;
-
+            qta_da_evadere = document.getElementById('modal_controllo_quantita').value;
             if (typeof (evadi[text]) != "undefined" && evadi[text] !== null) {
-                if (parseInt(evadi[text] + 1) <= parseInt(max_evasione))
-                    evadi[text] = evadi[text] + 1;
+                if (parseInt(parseInt(evadi[text]) + parseInt(qta_da_evadere)) <= parseInt(max_evasione))
+                    evadi[text] = parseInt(evadi[text]) + parseInt(qta_da_evadere);
                 else {
                     $('#modal_alertMaxEvasione').modal('show');
                     return;
                 }
 
             } else {
-                evadi[text] = 1;
+                if (parseInt(qta_da_evadere) <= parseInt(max_evasione))
+                    evadi[text] = parseInt(qta_da_evadere);
+                else {
+                    $('#modal_alertMaxEvasione').modal('show');
+                    return;
+                }
             }
             /*if (dorig.search(text) == (-1)) {
                 if (dorig != '')
