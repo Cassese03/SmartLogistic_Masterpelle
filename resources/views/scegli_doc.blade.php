@@ -124,27 +124,6 @@
                             </div>
                         </a>
                     </li>
-
-                    <li class="list-group-item">
-                        <a class="media"
-                           href="<?php echo URL::asset('scegli_doc/'.$produttore.'/'.$tipo.'/EST'); ?>">
-                            <div class="media-body">
-                                <h5>ESTATE</h5>
-                                <p>Produzione x ESTATE</p>
-                            </div>
-                        </a>
-                    </li>
-
-                    <li class="list-group-item">
-                        <a class="media"
-                           href="<?php echo URL::asset('scegli_doc/'.$produttore.'/'.$tipo.'/AUT'); ?>">
-                            <div class="media-body">
-                                <h5>AUTUNNO</h5>
-                                <p>Produzione x AUTUNNO</p>
-                            </div>
-                        </a>
-                    </li>
-
                     <li class="list-group-item">
                         <a class="media"
                            href="<?php echo URL::asset('scegli_doc/'.$produttore.'/'.$tipo.'/PRV'); ?>">
