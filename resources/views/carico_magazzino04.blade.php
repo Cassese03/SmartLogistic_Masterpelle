@@ -417,7 +417,7 @@
                                                 <h5 <?php if ($r->QtaRes == 0) echo 'style="color: red"' ?>><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
                                                     <br><?php echo 'Prezzo : ' . round(floatval($r->PrezzoUnitarioV), 2); ?>
                                                     <br> Qta: <?php echo floatval($r->QtaRes) ?>
-                                                    <?php echo '<br> Taglia : ' . $r->Taglia . ' <br> Colore : ' .$r->Colore;?>
+                                                                  <?php echo '<br> Taglia : ' . $r->Taglia . ' <br> Colore : ' . $r->Colore; ?>
                                                                   <?php /* echo  'Magazzino di Partenza: '.$r->Cd_MG_P;if($r->Cd_MGUbicazione_A != null) echo ' - '.$r->Cd_MGUbicazione_A;?><br><?php echo' Magazzino di Arrivo: '.$r->Cd_MG_A;?><br><?php if($r->Cd_ARLotto != Null)echo 'Lotto: '.$r->Cd_ARLotto;*/ ?>
                                                 </h5>
                                             </div>
@@ -453,7 +453,8 @@
                                                             </svg>
                                                         </i>
                                                     </button>
-                                                    <input type="hidden" name="Id_DORig"
+                                                    <input type="hidden"
+                                                           name="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore;?>"
                                                            value="<?php echo $r->Id_DORig ?>">
                                                     <button style="width:32%;" type="submit" name="elimina_riga"
                                                             value="Elimina" class="btn btn-danger btn-sm">

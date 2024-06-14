@@ -28,6 +28,8 @@ class AjaxController extends Controller
 
     public function modifica($id_dorig)
     {
+        $check = explode('_',$id_dorig);
+        $id_dorig = $check[0];
         $return = '';
         $dorig = DB::SELECT('SELECT dorig.*,
                     (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
@@ -45,10 +47,10 @@ class AjaxController extends Controller
                     $return .= '
                         <div class="row" style="gap: 1%">
                             <div class="col-6 col-md-6">
-                                <input class="form-control" type="text" name="taglia_colore_' . $d->Id_DORig . '" id="taglia_colore_' . $d->Id_DORig . '" value="' . $d->Colore . ' - ' . $d->Taglia . '" readonly>
+                                <input class="form-control" type="text" name="' . $d->Colore . '_' . $d->Taglia . '_' . $d->Id_DORig . '" id="' . $d->Colore . '_' . $d->Taglia . '_' . $d->Id_DORig . '" value="' . $d->Colore . ' - ' . $d->Taglia . '" readonly>
                             </div>
                             <div class="col-3 col-md-3">
-                                <input class="form-control" type="number" name="qta_' . $d->Id_DORig . '" id="qta_' . $d->Id_DORig . '" step="1" min="1" max="9999" value="' . number_format($d->Qta, 0) . '">
+                                <input class="form-control" type="number" name="' . $d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig . '" id="' . $d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig . '" step="1" min="1" max="9999" value="' . number_format($d->Qta, 0) . '">
                             </div>
                             <input type="hidden" name="' . $d->Id_DORig . '" id="' . $d->Id_DORig . '" value="' . $d->Id_DORig . '">
                         </div>

@@ -496,8 +496,9 @@
                                                             </svg>
                                                         </i>
                                                     </button>
-                                                    <input type="hidden" name="Id_DORig"
-                                                           value="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
+                                                    <input type="hidden"
+                                                           name="<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
+                                                           value="<?php echo $r->Id_DORig; ?>">
                                                     <button style="width:24%;" type="submit" name="elimina_riga"
                                                             value="Elimina" class="btn btn-danger btn-sm">
                                                         <i class="bi bi-trash-fill">

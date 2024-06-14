@@ -439,27 +439,80 @@ class HomeController extends Controller
             return Redirect::to('magazzino/carico4/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['elimina_riga'])) {
-            DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
+            $dorig = DB::SELECT('select *,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                    VR.Qta as QtaVariante,
+                    VR.QtaRes,
+                    VR.Ud_VR1,VR.Ud_VR2
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\'');
+
+            foreach ($dorig as $d) {
+                if (isset($dati[$d->Id_DORig . '_' . $d->Taglia . '_' . $d->Colore])) {
+                    $old_xml = '<rows>';
+                    foreach ($dorig as $c) {
+                        $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    }
+                    $old_xml .= '</rows>';
+
+                    $x_update = str_replace('<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . $d->QtaVariante . '" qtares="' . $d->QtaRes . '" />', '', $old_xml);
+
+                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $x_update]);
+                }
+            }
+
+            $check_qta = DB::SELECT('select DORIG.Id_DORig,
+                    SUM(VR.Qta) as QtaVariante,
+                    SUM(VR.QtaRes) AS QtaRes
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\' GROUP BY DORIG.Id_DORig');
+            foreach ($check_qta as $c)
+                DB::table('DoRig')->where('Id_DORig', $c->Id_DORig)->update(['Qta' => $c->QtaVariante, 'QtaEvadibile' => $c->QtaRes]);
+
+
+            DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes");
+            DB::statement("exec asp_DO_End $id_dotes");
+
+            return Redirect::to('magazzino/carico4/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['modifica_riga'])) {
 
             unset($dati['modifica_riga']);
             unset($dati['Id_DORig']);
-            unset($dati['modal_lotto_m']);/*
-            $dati['Cd_MGUbicazione_A'] = $dati['modal_ubicazione_A_m'];
-            unset($dati['modal_ubicazione_A_m']);
+            unset($dati['modal_lotto_m']);
 
-            if($dati['Cd_MGUbicazione_A']=='')
-            {
-                unset($dati['Cd_MGUbicazione_A']);
-            }*/
+            $dorig = DB::SELECT('select *,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                    VR.Qta as QtaVariante,
+                    VR.QtaRes,
+                    VR.Ud_VR1,VR.Ud_VR2
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\'');
 
-            $dorig = DB::SELECT('SELECT * FROM DORig WHERE Id_DoTes = ' . $id_dotes);
             foreach ($dorig as $d) {
-                if (isset($dati['qta_' . $d->Id_DORig])) {
-                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['Qta' => $dati['qta_' . $d->Id_DORig], 'QtaEvadibile' => $dati['qta_' . $d->Id_DORig]]);
+                if (isset($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig])) {
+                    $old_xml = '<rows>';
+                    foreach ($dorig as $c) {
+                        $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    }
+                    $old_xml .= '</rows>';
+
+                    $x_update = str_replace('<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . $d->QtaVariante . '" qtares="' . $d->QtaRes . '" />',
+                        '<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . ($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig]) . '" qtares="' . ($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig] - ($d->QtaVariante - $d->QtaRes)) . '.00000000" />',
+                        $old_xml);
+
+                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $x_update]);
                 }
             }
+            $check_qta = DB::SELECT('select DORIG.Id_DORig,
+                    SUM(VR.Qta) as QtaVariante,
+                    SUM(VR.QtaRes) AS QtaRes
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\' GROUP BY DORIG.Id_DORig');
+            foreach ($check_qta as $c)
+                DB::table('DoRig')->where('Id_DORig', $c->Id_DORig)->update(['Qta' => $c->QtaVariante, 'QtaEvadibile' => $c->QtaRes]);
 
             //DB::table('DoRig')->where('Id_DoRig', $id_riga)->update(['Cd_ARLotto' => Null]);
             //DB::table('DoRig')->where('Id_DoRig', $id_riga)->update(['Cd_MGUbicazione_A' => Null]);
@@ -468,6 +521,8 @@ class HomeController extends Controller
 
             DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes");
             DB::statement("exec asp_DO_End $id_dotes");
+
+            return Redirect::to('magazzino/carico4/' . $id_fornitore . '/' . $id_dotes);
         }
         $fornitori = DB::select('SELECT * from CF where Id_CF = ' . $id_fornitore);
         $documenti = DB::select('SELECT * from DOTes where Id_DoTes in (' . $id_dotes . ')');
@@ -548,27 +603,100 @@ class HomeController extends Controller
             return Redirect::to('magazzino/carico04/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['elimina_riga'])) {
-            DB::table('DoRig')->where('Id_DORig', $dati['Id_DORig'])->delete();
+
+            $dorig = DB::SELECT('select *,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                    VR.Qta as QtaVariante,
+                    VR.QtaRes,
+                    VR.Ud_VR1,VR.Ud_VR2
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\'');
+
+            foreach ($dorig as $d) {
+                if (isset($dati[$d->Id_DORig . '_' . $d->Taglia . '_' . $d->Colore])) {
+                    $old_xml = '<rows>';
+                    foreach ($dorig as $c) {
+                        $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    }
+                    $old_xml .= '</rows>';
+
+                    $x_update = str_replace('<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . $d->QtaVariante . '" qtares="' . $d->QtaRes . '" />', '', $old_xml);
+
+                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $x_update]);
+                }
+            }
+
+            $check_qta = DB::SELECT('select DORIG.Id_DORig,
+                    SUM(VR.Qta) as QtaVariante,
+                    SUM(VR.QtaRes) AS QtaRes
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\' GROUP BY DORIG.Id_DORig');
+            foreach ($check_qta as $c)
+                DB::table('DoRig')->where('Id_DORig', $c->Id_DORig)->update(['Qta' => $c->QtaVariante, 'QtaEvadibile' => $c->QtaRes]);
+
+
+            DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes");
+            DB::statement("exec asp_DO_End $id_dotes");
+
+            return Redirect::to('magazzino/carico04/' . $id_fornitore . '/' . $id_dotes);
         }
         if (isset($dati['modifica_riga'])) {
 
             unset($dati['modifica_riga']);
             unset($dati['Id_DORig']);
-            unset($dati['modal_lotto_m']);/*
+            unset($dati['modal_lotto_m']);
+            /*
             $dati['Cd_MGUbicazione_A'] = $dati['modal_ubicazione_A_m'];
             unset($dati['modal_ubicazione_A_m']);
 
             if($dati['Cd_MGUbicazione_A']=='')
             {
                 unset($dati['Cd_MGUbicazione_A']);
-            }*/
+            }
+            */
 
-            $dorig = DB::SELECT('SELECT * FROM DORig WHERE Id_DoTes = ' . $id_dotes);
+            $dorig = DB::SELECT('select *,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                    VR.Qta as QtaVariante,
+                    VR.QtaRes,
+                    VR.Ud_VR1,VR.Ud_VR2
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\'');
+
             foreach ($dorig as $d) {
-                if (isset($dati['qta_' . $d->Id_DORig])) {
-                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['Qta' => $dati['qta_' . $d->Id_DORig], 'QtaEvadibile' => $dati['qta_' . $d->Id_DORig]]);
+                if (isset($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig])) {
+                    $dorig2 = DB::SELECT('select *,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                    VR.Qta as QtaVariante,
+                    VR.QtaRes,
+                    VR.Ud_VR1,VR.Ud_VR2
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\'');
+
+                    $old_xml = '<rows>';
+                    foreach ($dorig2 as $c) {
+                        $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    }
+                    $old_xml .= '</rows>';
+
+                    $x_update = str_replace('<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . $d->QtaVariante . '" qtares="' . $d->QtaRes . '" />',
+                        '<row ud_vr1="' . $d->Ud_VR1 . '" ud_vr2="' . $d->Ud_VR2 . '" qta="' . ($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig]) . '" qtares="' . ($dati[$d->Colore . '_' . $d->Taglia . '_' . 'qta_' . $d->Id_DORig] - ($d->QtaVariante - $d->QtaRes)) . '.00000000" />',
+                        $old_xml);
+
+                    DB::table('DoRig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $x_update]);
                 }
             }
+            $check_qta = DB::SELECT('select DORIG.Id_DORig,
+                    SUM(VR.Qta) as QtaVariante,
+                    SUM(VR.QtaRes) AS QtaRes
+                    FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
+                    where id_dotes = \'' . $id_dotes . '\' GROUP BY DORIG.Id_DORig');
+            foreach ($check_qta as $c)
+                DB::table('DoRig')->where('Id_DORig', $c->Id_DORig)->update(['Qta' => $c->QtaVariante, 'QtaEvadibile' => $c->QtaRes]);
+
 
             //DB::table('DoRig')->where('Id_DoRig', $id_riga)->update(['Cd_ARLotto' => Null]);
             //DB::table('DoRig')->where('Id_DoRig', $id_riga)->update(['Cd_MGUbicazione_A' => Null]);
@@ -577,6 +705,8 @@ class HomeController extends Controller
 
             DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes");
             DB::statement("exec asp_DO_End $id_dotes");
+
+            return Redirect::to('magazzino/carico04/' . $id_fornitore . '/' . $id_dotes);
         }
         $fornitori = DB::select('SELECT * from CF where Id_CF = ' . $id_fornitore);
         $documenti = DB::select('SELECT * from DOTes where Id_DoTes in (' . $id_dotes . ')');

@@ -418,7 +418,7 @@
             <div class="col center">
                 <a href="#" class="logo">
                     <figure><img src="/img/logo_arca.png" alt=""></figure>
-                    Rettifica Quantit&agrave;</a>
+                    Cerca Documento</a>
             </div>
             <div class="right">
                 <a style="padding-left:20px;" href="/"><i class="material-icons">home</i></a>
@@ -429,7 +429,7 @@
             <div class="content-sticky-footer">
                 <div class="background bg-125"><img src="/img/background.png" alt=""></div>
                 <div class="w-100">
-                    <h1 class="text-center text-white title-background">Rettifica Quantit&agrave;</h1>
+                    <h1 class="text-center text-white title-background">Cerca Documento</h1>
                 </div>
 
                 <!-- <div id="interactive" class="viewport" style="position: relative;margin-top:30px;"></div> -->
