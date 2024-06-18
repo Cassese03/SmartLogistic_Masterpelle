@@ -535,20 +535,37 @@ class HomeController extends Controller
                 (SELECT Alias from x_ARVRAlias WHERE Cd_AR = DORig.Cd_AR and Ud_VR1 = VR.Ud_VR1 and Ud_VR2 = VR.Ud_VR2) AS xAlias,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
+                VR.Ud_VR1,
+                VR.Ud_VR2,
                 (SELECT Riga from x_VRVRGruppo where Ud_VR = VR.Ud_VR1) AS xRiga,
                 VR.Prezzo,
                 VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\' ORDER BY xRiga');
+            $session_mag = session('\'' . $id_dotes . '\'');
 
             foreach ($documento->righe as $r) {
                 $r->lotti = DB::select('SELECT * FROM ARLotto WHERE Cd_AR = \'' . $r->Cd_AR . '\' AND DataScadenza > \'' . $date . '\' ORDER BY TimeIns DESC');
+                if ($session_mag == null) {
+                    $giacenza = DB::select('select TOP 1 ISNULL(SUM(Quantita),0) as Quantita
+                                                from xmtf_MGDispEx(YEAR(GETDATE()))	xGD join AR on xGD.Cd_AR = AR.Cd_AR
+                                                left join x_VRVRGruppo xG1 on xG1.Ud_VRGruppo = isnull(AR.x_Ud_VRGruppo1, 0x) and xG1.Ud_VR = isnull(xGD.Ud_VR1, 0x)
+                                                WHERE AR.Cd_AR = \'' . $r->Cd_AR . '\' and xGD.Ud_VR1 = \'' . $r->Ud_VR1 . '\' and xGD.Ud_VR2 = \'' . $r->Ud_VR2 . '\'');
+                    if (sizeof($giacenza) > 0)
+                        $r->giacenza = $giacenza[0]->Quantita;
+                    else
+                        $r->giacenza = 0;
+
+                } else {
+                    $giacenza = DB::select('select TOP 1 ISNULL(Quantita,0) as Quantita
+                                                from xmtf_MGDispEx(YEAR(GETDATE()))	xGD join AR on xGD.Cd_AR = AR.Cd_AR
+                                                left join x_VRVRGruppo xG1 on xG1.Ud_VRGruppo = isnull(AR.x_Ud_VRGruppo1, 0x) and xG1.Ud_VR = isnull(xGD.Ud_VR1, 0x)
+                                                WHERE AR.Cd_AR = \'' . $r->Cd_AR . '\' and xGD.Ud_VR1 = \'' . $r->Ud_VR1 . '\' and xGD.Ud_VR2 = \'' . $r->Ud_VR2 . '\' and cd_mg = \'' . $session_mag["cd_mg_p"] . '\'');
+                    if (sizeof($giacenza) > 0)
+                        $r->giacenza = $giacenza[0]->Quantita;
+                    else
+                        $r->giacenza = 0;
+                }
             }
             $righe = DB::select('SELECT count(Riga) as Righe from DORig where Id_DoTes in (' . $id_dotes . ') and QtaEvadibile > \'0\'')[0]->Righe;
-            /* $totali_documento = DB::select('SELECT * from DoTotali where Id_DoTes = \''.$id_dotes.'\'');
-             if(sizeof($totali_documento) > 0) {
-                 $documento->imponibile = $totali_documento[0]->TotImponibileE;
-                 $documento->imposta = $totali_documento[0]->TotImpostaE;
-                 $documento->totale = $totali_documento[0]->TotaPagareE;
-             }*/
             $articolo = DB::select('SELECT Cd_AR from DORig where Id_DoTes in (' . $id_dotes . ') group by Cd_AR');
             $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ');
             if (sizeof($flusso) > 0) {

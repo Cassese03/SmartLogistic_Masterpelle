@@ -431,6 +431,9 @@
                             <input type="hidden"
                                    id="qta_max_evad_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
                                    value="<?php echo $r->QtaRes;?>">
+                            <input type="hidden"
+                                   id="giacenza_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>"
+                                   value="<?php echo $r->giacenza;?>">
 
                             <li class="list-group-item"
                                 id="riga_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>">
@@ -442,7 +445,8 @@
                                                     id="riga_<?php echo $r->Id_DORig.'_'.$r->Taglia.'_'.$r->Colore; ?>_counter">
                                                 </h5>
                                                 <h5 style="text-align:center<?php if ($r->QtaRes == 0) echo ';color: red' ?>"><?php echo $r->Cd_AR . ' - ' . $r->Descrizione; ?>
-                                                    <br><?php echo 'Prezzo :' . round(floatval($r->PrezzoUnitarioV), 2); ?>
+                                                    <br><?php echo 'Prezzo : ' . round(floatval($r->PrezzoUnitarioV), 2); ?>
+                                                    <br><?php echo 'Giacenza : ' . round(floatval($r->giacenza), 2); ?>
                                                     <br> Qta : <?php echo floatval($r->QtaRes) ?>
                                                                    <?php echo '<br> Taglia : ' . $r->Taglia . ' <br> Colore : ' . $r->Colore; ?>
 
@@ -1102,6 +1106,15 @@
         <strong>Warning!</strong> <br>La riga ha raggiunto il massimo della quantità evadibile</a>.
     </div>
 </div>
+<div class="modal" id="modal_alertNoGiac" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="alert alert-success alert-dismissible fade show">
+        <button type="button" class="close"
+                onclick="$('#modal_alertNoGiac').modal('hide');$('#cerca_articolo2').val('');$('#cerca_articolo2').focus() ">
+            &times;
+        </button>
+        <strong>Warning!</strong> <br>La merce non ha la giacenza nel magazzino selezionato</a>.
+    </div>
+</div>
 
 <div class="modal" id="modal_alertSegnalazione" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="alert alert-success alert-dismissible fade show">
@@ -1231,19 +1244,30 @@
             find2 = document.getElementById('modal_controllo_dorig_tc').value;
             dorig = document.getElementById('DORIG').value;
             max_evasione = document.getElementById('qta_max_evad_' + text).value;
+            giacenza = document.getElementById('giacenza_' + text).value;
             qta_da_evadere = document.getElementById('modal_controllo_quantita').value;
             if (typeof (evadi[text]) != "undefined" && evadi[text] !== null) {
-                if (parseInt(parseInt(evadi[text]) + parseInt(qta_da_evadere)) <= parseInt(max_evasione))
-                    evadi[text] = parseInt(evadi[text]) + parseInt(qta_da_evadere);
-                else {
+                if (parseInt(parseInt(evadi[text]) + parseInt(qta_da_evadere)) <= parseInt(max_evasione)) {
+                    if (parseInt(parseInt(evadi[text]) + parseInt(qta_da_evadere)) <= parseInt(giacenza))
+                        evadi[text] = parseInt(evadi[text]) + parseInt(qta_da_evadere);
+                    else {
+                        $('#modal_alertNoGiac').modal('show');
+                        return;
+                    }
+                } else {
                     $('#modal_alertMaxEvasione').modal('show');
                     return;
                 }
 
             } else {
-                if (parseInt(qta_da_evadere) <= parseInt(max_evasione))
-                    evadi[text] = parseInt(qta_da_evadere);
-                else {
+                if (parseInt(qta_da_evadere) <= parseInt(max_evasione)) {
+                    if (parseInt(qta_da_evadere) <= parseInt(giacenza)) {
+                        evadi[text] = parseInt(qta_da_evadere);
+                    } else {
+                        $('#modal_alertNoGiac').modal('show');
+                        return;
+                    }
+                } else {
                     $('#modal_alertMaxEvasione').modal('show');
                     return;
                 }
