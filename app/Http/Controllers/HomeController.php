@@ -539,7 +539,7 @@ class HomeController extends Controller
                 VR.Ud_VR2,
                 (SELECT Riga from x_VRVRGruppo where Ud_VR = VR.Ud_VR1) AS xRiga,
                 VR.Prezzo,
-                VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\' ORDER BY xRiga');
+                VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\' ORDER BY Colore,xRiga');
             $session_mag = session('\'' . $id_dotes . '\'');
 
             foreach ($documento->righe as $r) {
@@ -737,7 +737,7 @@ class HomeController extends Controller
                                                         (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                                                         (SELECT Riga from x_VRVRGruppo where Ud_VR = VR.Ud_VR1) AS xRiga,
                                                         VR.Prezzo,
-                                                        VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\'  ORDER BY xRiga');
+                                                        VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\'  ORDER BY Colore,xRiga');
 
             foreach ($documento->righe as $r) {
                 $r->lotti = DB::select('SELECT * FROM ARLotto WHERE Cd_AR = \'' . $r->Cd_AR . '\'  AND DataScadenza > \'' . $date . '\' ORDER BY TimeIns DESC ');
