@@ -28,7 +28,7 @@ class AjaxController extends Controller
 
     public function modifica($id_dorig)
     {
-        $check = explode('_',$id_dorig);
+        $check = explode('_', $id_dorig);
         $id_dorig = $check[0];
         $return = '';
         $dorig = DB::SELECT('SELECT dorig.*,
@@ -920,7 +920,7 @@ class AjaxController extends Controller
             $insert[] = array(
                 "id_dorig" => $key2[0],
                 "taglia" => $key2[1],
-                "colore" => $key2[2],
+                "colore" => (sizeof($key2) == 3) ? $key2[2] . '.' . $key2[3] : $key2[2],
                 "quantita" => $d,
             );
         }
