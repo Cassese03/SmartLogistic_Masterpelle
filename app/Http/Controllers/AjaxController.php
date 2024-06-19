@@ -920,7 +920,7 @@ class AjaxController extends Controller
             $insert[] = array(
                 "id_dorig" => $key2[0],
                 "taglia" => $key2[1],
-                "colore" => (sizeof($key2) == 3) ? $key2[2] . '.' . $key2[3] : $key2[2],
+                "colore" => (sizeof($key2) == 4) ? $key2[2] . '.' . $key2[3] : $key2[2],
                 "quantita" => $d,
             );
         }
