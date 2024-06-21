@@ -56,6 +56,7 @@ Route::any('magazzino/inventario', 'HomeController@inventario_magazzino');
 Route::any('calcola_totali_ordine', 'HomeController@calcola_totali_ordine');
 
 Route::any('ajax/cerca_articolo/{q}', 'AjaxController@cerca_articolo');
+Route::any('ajax/gestiscixml/{id_dotes}', 'AjaxController@GestisciXML');
 Route::any('ajax/cerca_articolo_trasporto/{q}', 'AjaxController@cerca_articolo_trasporto');
 Route::any('ajax/cerca_articolo_new/{q}/{dest}/{forn}', 'AjaxController@cerca_articolo_new');
 Route::any('ajax/cerca_fornitore/{q}', 'AjaxController@cerca_fornitore');
