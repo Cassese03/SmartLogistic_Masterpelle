@@ -1009,7 +1009,7 @@ class AjaxController extends Controller
                 VR.Qta as QtaVariante,
                 VR.QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2,
-                DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $identificativo . ') AND Colore = \'' . $insert['Colore'] . '\' and Taglia = \'' . $insert['Taglia'] . '\'
+                DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $identificativo . ') AND (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $r['colore'] . '\' and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $r['taglia'] . '\'
                 ORDER BY TIMEINS DESC');
 
             $insert_evasione['Cd_Aliquota'] = $Cd_Aliquota;
@@ -1054,7 +1054,7 @@ class AjaxController extends Controller
                 '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_oldqta) . '" qtares="' . ($_oldqtares - $r['quantita']) . '.00000000" />',
                 $old_xml);
 
-            if (floatval($r['quantita']) < floatval($Riga[0]->QtaRes)) {
+            if (floatval($r['quantita']) <= floatval($Riga[0]->QtaRes)) {
                 $new_doc = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
@@ -1128,7 +1128,7 @@ class AjaxController extends Controller
                 DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
 
                 DB::statement("exec asp_DO_End '$Id_DoTes_old'");
-            } else {
+            } else {/*
                 $new_doc = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
@@ -1153,8 +1153,7 @@ class AjaxController extends Controller
                                 }
                             }
                             $xml .= '</rows>';
-                            /*
-                                                        strstr($xml, 'ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '"')*/
+                            /*strstr($xml, 'ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '"')*//*
                             $x_update2 = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_xoldqta . '" qtares="' . $_xoldqtares . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" />', $xml);
                             if ($x_update2 == $xml) {
                                 $x_update2 = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" /></rows>', $x_update2);
@@ -1183,13 +1182,35 @@ class AjaxController extends Controller
 
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'0\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
-                DB::update('Update dorig set Evasa = \'1\'   where Id_DoRig = \'' . $r['id_dorig'] . '\' ');
+                DB::update('Update dorig set Evasa = \'1\'   where Id_DoRig = \'' . $r['id_dorig'] . '\' ');*/
 
             }
             DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes1'");
             DB::statement("exec asp_DO_End '$Id_DoTes1'");
+            $this->GestisciXml($Id_DoTes1);
         }
         return response('{"Success":"Evasione Completata"}', '200');
+    }
+
+    public
+    function GestisciXML($Id_DOTes)
+    {
+        $doc = DB::select('SELECT DISTINCT Id_DORig FROM DORig WHERE Id_DOTes = \'' . $Id_DOTes . '\'');
+        foreach ($doc as $d) {
+            $check_riga = DB::SELECT('SELECT
+                SUM(VR.Qta) as QtaVariante,
+                SUM(VR.QtaRes) as QtaRes,
+                VR.Ud_VR1,VR.Ud_VR2
+                FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $d->Id_DORig . ')
+                GRUOUP BY VR.Ud_VR1,VR.Ud_VR2 ');
+
+            $xml = '<rows>';
+            foreach ($check_riga as $c) {
+                $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+            }
+            $xml .= '</rows>';
+            DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
+        }
     }
 
     public
