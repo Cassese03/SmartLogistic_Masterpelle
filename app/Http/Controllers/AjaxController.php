@@ -1210,6 +1210,8 @@ class AjaxController extends Controller
             }
             $xml .= '</rows>';
             DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
+            DB::statement("exec asp_DO_End '$Id_DOTes'");
+
         }
     }
 
