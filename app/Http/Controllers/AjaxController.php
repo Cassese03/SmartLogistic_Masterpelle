@@ -1202,7 +1202,7 @@ class AjaxController extends Controller
                 SUM(VR.QtaRes) as QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2
                 FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $d->Id_DORig . ')
-                GRUOUP BY VR.Ud_VR1,VR.Ud_VR2 ');
+                GROUP BY VR.Ud_VR1,VR.Ud_VR2 ');
 
             $xml = '<rows>';
             foreach ($check_riga as $c) {
