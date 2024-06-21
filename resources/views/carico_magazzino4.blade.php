@@ -4,6 +4,14 @@
 <html lang="en" class="md">
 
 <head>
+    <div
+        style="position: fixed;top: 0px;left: 0px;width: 100%;height: 100%;background: rgba(255, 255, 255,1);z-index: 1000000000;display: none;"
+        id="ajax_loader">
+
+        <img src="<?php echo URL::asset('img/logo.png') ?>" alt="AdminLTE Logo"
+             style="width:400px;margin:0 auto;display:block;margin-top:200px;">
+        <h2 style="text-align:center;margin-top:10px;">Operazione In Corso....</h2>
+    </div>
     <meta charset="utf-8">
     <meta name="viewport"
           content="width=device-width, initial-scale=1, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
@@ -1196,6 +1204,7 @@
 <script src="/js/jquery.scannerdetection.js" type="text/javascript"></script>
 
 </body>
+
 </html>
 <script type="text/javascript">
 
@@ -1505,6 +1514,8 @@
 
     function conferma_righe() {
 
+        $('#ajax_loader').fadeIn();
+
         cd_do = document.getElementById('doc_evadi').value;
 
         cd_mg_p = document.getElementById('cd_mg_p').value;
@@ -1523,6 +1534,7 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
         }).done(function (result) {
+            $('#ajax_loader').fadeOut();
             location.reload();
             if (result.length > 1)
                 $('#modal_alertQuantita0').modal('show');
