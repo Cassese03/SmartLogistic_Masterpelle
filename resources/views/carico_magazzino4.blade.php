@@ -641,8 +641,7 @@
                            readonly>
 
                     <label>Quantita</label>
-                    <input class="form-control" type="text" id="modal_controllo_quantita" value="" autocomplete="off"
-                           @if(substr($documento->Cd_Do,0,1) != 'O') readonly @endif>
+                    <input class="form-control" type="text" id="modal_controllo_quantita" value="" autocomplete="off">
 
                     <input class="form-control" type="hidden" id="modal_controllo_lotto" value="" autocomplete="off"
                            readonly>
