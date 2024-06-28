@@ -910,7 +910,6 @@ class AjaxController extends Controller
         DB::statement("exec asp_DO_End '$Id_DoTes1'");
     }
 
-    public
     function conferma_righe($Id_DoRig, $cd_mg_a, $cd_mg_p, $cd_do)
     {
         $insert = [];
@@ -1025,6 +1024,8 @@ class AjaxController extends Controller
             $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
 
             $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
+            print_r($qta_evasa);
+
 
             $qta_evadibile = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvadibile;
 
@@ -1123,6 +1124,8 @@ class AjaxController extends Controller
 
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
+                echo '<br>';
+                return 'Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'';
                 DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
                 DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
@@ -1271,7 +1274,7 @@ class AjaxController extends Controller
             $insert_evasione['Id_DORig_Evade'] = $Id_DoRig;
             $insert_evasione['PrezzoUnitarioV'] = $r->PrezzoUnitarioV;
             $insert_evasione['Qta'] = $r['quantita'];
-            $insert_evasione['QtaEvasa'] = $insert_evasione['Qta'];
+            $insert_evasione['QtaEvasa'] = 0;
 
             $Riga = DB::SELECT('SELECT * FROM DoRig where Id_DoRig=\'' . $Id_DoRig . '\'');
             $insert_evasione['Cd_Aliquota'] = $r->Cd_Aliquota;
@@ -1279,7 +1282,7 @@ class AjaxController extends Controller
             $insert_evasione['Id_DoTes'] = $Id_DoTes1;
 
 
-            $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $Id_DoRig . '\' ')[0]->QtaEvasa;
+            $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $Id_DoRig_OLD . '\' ')[0]->QtaEvasa;
             $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
             $qta_evadibile = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $Id_DoRig . '\' ')[0]->QtaEvadibile;
             $qta_evadibile = intval($qta_evadibile) - intval($r['quantita']);
@@ -1290,7 +1293,8 @@ class AjaxController extends Controller
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\'WHERE Id_DoRig = \'' . $Id_DoRig . '\'');
                 DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\'WHERE Id_DoRig = \'' . $Id_DoRig_OLD . '\'');
             } else {
-                DB::UPDATE('Update DoRig set QtaEvadibile = \'0\'WHERE Id_DoRig = \'' . $Id_DoRig . '\'');
+                DB::UPDATE('Update DoRig set QtaEvadibile = \'0\' WHERE Id_DoRig = \'' . $Id_DoRig . '\'');
+                DB::UPDATE('update DORig set QtaEvasa = Qta where Id_DORig = \''.$Id_DoRig_OLD.'\'');
                 DB::update('Update dorig set Evasa = \'1\'   where Id_DoRig = \'' . $Id_DoRig . '\' ');
                 $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $Id_DoRig . '\' ')[0]->Id_DOTes;
                 DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
