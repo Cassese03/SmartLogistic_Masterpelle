@@ -1088,7 +1088,7 @@ class AjaxController extends Controller
                                                             group by DORig.Id_DORIG,DORIG.QtaEvasa');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
+                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa]);
                             } else {
                                 // STESSO ARTICOLO MA CON DIVERSE TAGLIE E COLORI
                                 $update = 1;
@@ -1111,7 +1111,7 @@ class AjaxController extends Controller
                                                             group by DORig.Id_DORIG,DORIG.QtaEvasa');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
+                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa]);
                             }
                         }
                 }
