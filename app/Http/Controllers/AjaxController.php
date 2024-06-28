@@ -1001,7 +1001,6 @@ class AjaxController extends Controller
 
             $insert_evasione['Qta'] = $r['quantita'];
 
-            $insert_evasione['QtaEvasa'] = $insert_evasione['Qta'];
 
             $Riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
@@ -1083,12 +1082,13 @@ class AjaxController extends Controller
                                 $xml .= '</rows>';
                                 $x_update2 = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_xoldqta . '" qtares="' . $_xoldqtares . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" />', $xml);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
-                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes
+                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
                                                             group by DORig.Id_DORIG');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
+                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
                             } else {
                                 // STESSO ARTICOLO MA CON DIVERSE TAGLIE E COLORI
                                 $update = 1;
@@ -1105,23 +1105,28 @@ class AjaxController extends Controller
                                 $x_update2 = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($r['quantita']) . '" qtares="' . ($r['quantita']) . '" /></rows>', $xml);
 
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
-                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes
+                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
                                                             group by DORig . Id_DORIG');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
+                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
                             }
                         }
                 }
 
-                if ($update == 0) DB::table('DoRig')->insertGetId($insert_evasione);
+                if ($update == 0) {
+                    $insert_evasione['QtaEvasa'] = $insert_evasione['Qta'];
+                    DB::table('DoRig')->insertGetId($insert_evasione);
+                }
 
                 DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
 
                 $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $check_riga[0]->Id_DORig . '\' ')[0]->Id_DOTes;
 
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
+
 
                 DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
