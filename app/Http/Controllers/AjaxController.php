@@ -1085,7 +1085,7 @@ class AjaxController extends Controller
                                 $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
-                                                            group by DORig.Id_DORIG');
+                                                            group by DORig.Id_DORIG,DORIG.QtaEvasa');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
@@ -1108,7 +1108,7 @@ class AjaxController extends Controller
                                 $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
-                                                            group by DORig . Id_DORIG');
+                                                            group by DORig.Id_DORIG,DORIG.QtaEvasa');
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
                                 DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => $check_qta[0]->QtaEvasa + $r['quantita']]);
