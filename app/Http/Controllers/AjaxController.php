@@ -1117,6 +1117,7 @@ class AjaxController extends Controller
                 }
 
                 if ($update == 0) {
+                    $insert_evasione['QtaEvasa'] = intval($r['quantita']);
                     DB::table('DoRig')->insertGetId($insert_evasione);
                 }
 
@@ -1126,8 +1127,11 @@ class AjaxController extends Controller
 
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
+                /* $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
 
-             //   DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
+                 $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
+
+                 DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');*/
 
                 DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
 
