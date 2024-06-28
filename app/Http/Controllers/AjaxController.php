@@ -1127,7 +1127,7 @@ class AjaxController extends Controller
                 DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
 
-                DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
+             //   DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
 
                 DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
 
