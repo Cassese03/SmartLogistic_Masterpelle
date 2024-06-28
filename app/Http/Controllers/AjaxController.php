@@ -1117,7 +1117,6 @@ class AjaxController extends Controller
                 }
 
                 if ($update == 0) {
-                    $insert_evasione['QtaEvasa'] = $insert_evasione['Qta'];
                     DB::table('DoRig')->insertGetId($insert_evasione);
                 }
 
