@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Bugsnag\BugsnagLaravel\Facades\Bugsnag;
+use RuntimeException;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
