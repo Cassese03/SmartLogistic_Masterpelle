@@ -951,12 +951,12 @@ class AjaxController extends Controller
         }
 
         foreach ($insert as $r) {
-
+/*
             print_r($r);
             echo '<br>';
             echo '<br>';
             echo '<br>';
-            echo '<br>';
+            echo '<br>';*/
 
             $identificativo = $r['id_dorig'];
 
