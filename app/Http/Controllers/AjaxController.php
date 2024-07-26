@@ -988,8 +988,8 @@ class AjaxController extends Controller
             if (sizeof($ud_vr2) > 0) {
                 $ud_vr2 = $ud_vr2[0]->q;
             } else {
-                $r['colore'] = str_replace('.', '%', $r['colore']);
-                $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione like \'%' . $r['colore'] . '%\'')[0]->q;
+                $r['colore'] = str_replace('.', ' ', $r['colore']);
+                $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['colore'] . '\'')[0]->q;
             }
 
             $insert_evasione['x_VRData'] = '<rows>';
