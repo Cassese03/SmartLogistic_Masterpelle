@@ -431,7 +431,7 @@
                 <div class="row">
 
                     <div class="col-sm-12" style="margin-top:5px;">
-                        <ul class="list-group">
+                        <ul class="list-group" id="lista">
 
                                 <?php foreach ($documento->righe as $r){
                                 $totale = 0; ?>
@@ -1294,11 +1294,17 @@
             //righe++;
             //document.getElementById('button').value = righe;
             //document.getElementById('button').innerHTML = 'Evadi Righe (' + righe + ')';
-            if (parseInt(evadi[text]) == parseInt(max_evasione))
+            if (parseInt(evadi[text]) == parseInt(max_evasione)) {
                 document.getElementById('riga_' + text).style.backgroundColor = 'green';
-            else
+                newElement2 = document.getElementById('riga_' + text);
+                document.getElementById('riga_' + text).remove();
+                document.getElementById('lista').appendChild(newElement2);
+            } else {
                 document.getElementById('riga_' + text).style.backgroundColor = 'yellow';
-
+                newElement2 = document.getElementById('riga_' + text);
+                document.getElementById('riga_' + text).remove();
+                document.getElementById('lista').insertBefore(newElement2, document.getElementById('lista').firstChild);
+            }
             document.getElementById('riga_' + text + '_counter').innerHTML = 'Righe in Evasione : ' + evadi[text];
         } else {
 
