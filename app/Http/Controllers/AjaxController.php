@@ -1181,7 +1181,7 @@ class AjaxController extends Controller
                         $insert_evasione['QtaEvasa'] = null;
                     }
 
-                    if ($x_update != '')  DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                    if ($x_update != '') DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
 
                     $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $check_riga[0]->Id_DORig . '\' ')[0]->Id_DOTes;
 
@@ -1206,7 +1206,7 @@ class AjaxController extends Controller
             return response('{"Success":"Evasione Completata"}', '200');
         } catch (\Exception $e) {
             DB::ROLLBACK();
-            return $e->getMessage();
+            return $e->getLine().' - ' . $e->getMessage();
         }
     }
 
