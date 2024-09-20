@@ -913,108 +913,111 @@ class AjaxController extends Controller
     public
     function conferma_righe($Id_DoRig, $cd_mg_a, $cd_mg_p, $cd_do)
     {
-        $insert = [];
+        try {
+            $insert = [];
 
-        foreach ($_GET as $key => $d) {
-            $key2 = explode('_', $key);
-            $insert[] = array(
-                "id_dorig" => $key2[0],
-                "taglia" => $key2[1],
-                "colore" => (sizeof($key2) == 4) ? $key2[2] . '.' . $key2[3] : $key2[2],
-                "quantita" => $d,
-            );
-        }
+            DB::beginTransaction();
 
-        $Id_DoRig = 0;
-        foreach ($insert as $i)
-            $Id_DoRig .= '\',\'' . $i['id_dorig'];
+            foreach ($_GET as $key => $d) {
+                $key2 = explode('_', $key);
+                $insert[] = array(
+                    "id_dorig" => $key2[0],
+                    "taglia" => $key2[1],
+                    "colore" => (sizeof($key2) == 4) ? $key2[2] . '.' . $key2[3] : $key2[2],
+                    "quantita" => $d,
+                );
+            }
 
-        $date = date('d/m/Y', strtotime('today'));
-        $date_compare = date('Y-m-d 00:00:00', strtotime('today'));
+            $Id_DoRig = 0;
+            foreach ($insert as $i)
+                $Id_DoRig .= '\',\'' . $i['id_dorig'];
 
-        $controllo = DB::SELECT('SELECT * FROM DORIG WHERE Id_DORig in (\'' . $Id_DoRig . '\')')[0]->Id_DOTes;
+            $date = date('d/m/Y', strtotime('today'));
+            $date_compare = date('Y-m-d 00:00:00', strtotime('today'));
 
-        $controlli = DB::SELECT('SELECT * FROM DORIG WHERE Id_DOTes = \'' . $controllo . '\'');
+            $controllo = DB::SELECT('SELECT * FROM DORIG WHERE Id_DORig in (\'' . $Id_DoRig . '\')')[0]->Id_DOTes;
 
-        //FACOLTATIVO SE SI VUOLE EVADERE SEMPRE E SOLO IN UN DOCUMENTO
-        $dorigs = '';
-        foreach ($controlli as $c) {
-            $dorigs .= '\',\'' . $c->Id_DORig;
-        }
-        $testata = DB::SELECT('SELECT * FROM DORIG WHERE Id_DORig_Evade in (\'' . $dorigs . '\')');
-        if (sizeof($testata) > 0)
-            if ($testata[0]->DataDoc == $date_compare)
-                $Id_DoTes = $testata[0]->Id_DOTes;
+            $controlli = DB::SELECT('SELECT * FROM DORIG WHERE Id_DOTes = \'' . $controllo . '\'');
 
-        if (!isset($Id_DoTes)) {
-            $Id_DoTes = '';
-        }
+            //FACOLTATIVO SE SI VUOLE EVADERE SEMPRE E SOLO IN UN DOCUMENTO
+            $dorigs = '';
+            foreach ($controlli as $c) {
+                $dorigs .= '\',\'' . $c->Id_DORig;
+            }
+            $testata = DB::SELECT('SELECT * FROM DORIG WHERE Id_DORig_Evade in (\'' . $dorigs . '\')');
+            if (sizeof($testata) > 0)
+                if ($testata[0]->DataDoc == $date_compare)
+                    $Id_DoTes = $testata[0]->Id_DOTes;
 
-        foreach ($insert as $r) {
-            /*
-                        print_r($r);
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';
-                        echo '<br>';*/
+            if (!isset($Id_DoTes)) {
+                $Id_DoTes = '';
+            }
 
-            $identificativo = $r['id_dorig'];
+            foreach ($insert as $r) {
+                /*
+                            print_r($r);
+                            echo '<br>';
+                            echo '<br>';
+                            echo '<br>';
+                            echo '<br>';*/
 
-            $lotto = '0';
+                $identificativo = $r['id_dorig'];
 
-            $cd_cf = $controlli[0]->Cd_CF;
+                $lotto = '0';
 
-            $documento = $cd_do;
+                $cd_cf = $controlli[0]->Cd_CF;
 
-            if ($cd_mg_p != 'ND') $insert_evasione['Cd_MG_P'] = $cd_mg_p;
-            if ($cd_mg_a != 'ND') $insert_evasione['Cd_MG_A'] = $cd_mg_a;
+                $documento = $cd_do;
 
-            $PrezzoUnitarioV = '';
-            $Cd_AR = '';
-            $Cd_CGConto = '';
-            $Cd_Aliquota = '';
+                if ($cd_mg_p != 'ND') $insert_evasione['Cd_MG_P'] = $cd_mg_p;
+                if ($cd_mg_a != 'ND') $insert_evasione['Cd_MG_A'] = $cd_mg_a;
 
-            foreach ($controlli as $x) {
-                if ($x->Id_DORig == $r['id_dorig']) {
-                    $PrezzoUnitarioV = $x->PrezzoUnitarioV;
-                    $Cd_AR = $x->Cd_AR;
-                    $Cd_CGConto = $x->Cd_CGConto;
-                    $Cd_Aliquota = $x->Cd_Aliquota;
+                $PrezzoUnitarioV = '';
+                $Cd_AR = '';
+                $Cd_CGConto = '';
+                $Cd_Aliquota = '';
+
+                foreach ($controlli as $x) {
+                    if ($x->Id_DORig == $r['id_dorig']) {
+                        $PrezzoUnitarioV = $x->PrezzoUnitarioV;
+                        $Cd_AR = $x->Cd_AR;
+                        $Cd_CGConto = $x->Cd_CGConto;
+                        $Cd_Aliquota = $x->Cd_Aliquota;
+                    }
                 }
-            }
 
-            $ud_vr1 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['taglia'] . '\'')[0]->q;
-            $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['colore'] . '\'');
-            if (sizeof($ud_vr2) > 0) {
-                $ud_vr2 = $ud_vr2[0]->q;
-            } else {
-                $r['colore'] = str_replace('.', ' ', $r['colore']);
-                $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['colore'] . '\'')[0]->q;
-            }
+                $ud_vr1 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['taglia'] . '\'')[0]->q;
+                $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['colore'] . '\'');
+                if (sizeof($ud_vr2) > 0) {
+                    $ud_vr2 = $ud_vr2[0]->q;
+                } else {
+                    $r['colore'] = str_replace('.', ' ', $r['colore']);
+                    $ud_vr2 = DB::SELECT('SELECT Ud_x_VR AS q from x_VR WHERE Descrizione = \'' . $r['colore'] . '\'')[0]->q;
+                }
 
-            $insert_evasione['x_VRData'] = '<rows>';
-            $insert_evasione['x_VRData'] .= '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $r['quantita'] . '" qtares="' . $r['quantita'] . '"/>';
-            $insert_evasione['x_VRData'] .= '</rows>';
+                $insert_evasione['x_VRData'] = '<rows>';
+                $insert_evasione['x_VRData'] .= '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $r['quantita'] . '" qtares="' . $r['quantita'] . '"/>';
+                $insert_evasione['x_VRData'] .= '</rows>';
 
-            if ($Id_DoTes == '') {
-                $Id_DoTes = DB::table('DOTes')->insertGetId(['Cd_CF' => $cd_cf, 'Cd_Do' => $documento]);
-                DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes'");
-                DB::statement("exec asp_DO_End '$Id_DoTes'");
-            }
+                if ($Id_DoTes == '') {
+                    $Id_DoTes = DB::table('DOTes')->insertGetId(['Cd_CF' => $cd_cf, 'Cd_Do' => $documento]);
+                    DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes'");
+                    DB::statement("exec asp_DO_End '$Id_DoTes'");
+                }
 
-            if ($lotto != '0')
-                $insert_evasione['Cd_ARLotto'] = $lotto;
+                if ($lotto != '0')
+                    $insert_evasione['Cd_ARLotto'] = $lotto;
 
-            $Id_DoTes1 = $Id_DoTes;
+                $Id_DoTes1 = $Id_DoTes;
 
-            $insert_evasione['Cd_AR'] = $Cd_AR;
+                $insert_evasione['Cd_AR'] = $Cd_AR;
 
-            $insert_evasione['PrezzoUnitarioV'] = $PrezzoUnitarioV;
+                $insert_evasione['PrezzoUnitarioV'] = $PrezzoUnitarioV;
 
-            $insert_evasione['Qta'] = $r['quantita'];
+                $insert_evasione['Qta'] = $r['quantita'];
 
 
-            $Riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                $Riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
                 VR.Qta as QtaVariante,
@@ -1023,25 +1026,25 @@ class AjaxController extends Controller
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $identificativo . ') AND (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $r['colore'] . '\' and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $r['taglia'] . '\'
                 ORDER BY TIMEINS DESC');
 
-            $insert_evasione['Cd_Aliquota'] = $Cd_Aliquota;
+                $insert_evasione['Cd_Aliquota'] = $Cd_Aliquota;
 
-            $insert_evasione['Cd_CGConto'] = $Cd_CGConto;
+                $insert_evasione['Cd_CGConto'] = $Cd_CGConto;
 
-            $insert_evasione['Id_DoTes'] = $Id_DoTes1;
+                $insert_evasione['Id_DoTes'] = $Id_DoTes1;
 
-            $insert_evasione['Id_DORig_Evade'] = $r['id_dorig'];
+                $insert_evasione['Id_DORig_Evade'] = $r['id_dorig'];
 
-            //DB::table('DoRig')->insertGetId($insert_evasione);
+                //DB::table('DoRig')->insertGetId($insert_evasione);
 
-            $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
+                $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
 
-            $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
+                $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
 
-            $qta_evadibile = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvadibile;
+                $qta_evadibile = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvadibile;
 
-            $qta_evadibile = intval($qta_evadibile) - intval($r['quantita']);
+                $qta_evadibile = intval($qta_evadibile) - intval($r['quantita']);
 
-            $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
                 VR.Qta as QtaVariante,
@@ -1050,23 +1053,23 @@ class AjaxController extends Controller
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $r['id_dorig'] . ')
                 ORDER BY TIMEINS DESC');
 
-            $_oldqta = 0;
-            $_oldqtares = 0;
-            $old_xml = '<rows>';
-            foreach ($check_riga as $c) {
-                $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
-                if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
-                    $_oldqta = $c->QtaVariante;
-                    $_oldqtares = $c->QtaRes;
+                $_oldqta = 0;
+                $_oldqtares = 0;
+                $old_xml = '<rows>';
+                foreach ($check_riga as $c) {
+                    $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
+                        $_oldqta = $c->QtaVariante;
+                        $_oldqtares = $c->QtaRes;
+                    }
                 }
-            }
-            $old_xml .= '</rows>';
-            $x_update = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_oldqta . '" qtares="' . $_oldqtares . '" />',
-                '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_oldqta) . '" qtares="' . ($_oldqtares - $r['quantita']) . '.00000000" />',
-                $old_xml);
+                $old_xml .= '</rows>';
+                $x_update = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_oldqta . '" qtares="' . $_oldqtares . '" />',
+                    '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_oldqta) . '" qtares="' . ($_oldqtares - $r['quantita']) . '.00000000" />',
+                    $old_xml);
 
-            if (floatval($r['quantita']) <= floatval($Riga[0]->QtaRes)) {
-                $new_doc = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                if (floatval($r['quantita']) <= floatval($Riga[0]->QtaRes)) {
+                    $new_doc = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
                 VR.Qta as QtaVariante,
@@ -1074,132 +1077,137 @@ class AjaxController extends Controller
                 VR.Ud_VR1,VR.Ud_VR2,
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE Id_DOTes IN (' . $Id_DoTes1 . ')
                 ORDER BY TIMEINS DESC');
-                $update = 0;
-                if (sizeof($new_doc) > 0) {
-                    foreach ($new_doc as $r1) {
-                        if ($r1->Cd_AR == $Cd_AR) {
-                            /*print_r($r1);
-                            echo '<br>';
-                            echo '<br>';
-                            echo '<br>';
-                            echo '<br>';*/
-                            if ($ud_vr1 == $r1->Ud_VR1 && $ud_vr2 == $r1->Ud_VR2) {
-                                // STESSO ARTICOLO CON STESSE TAGLIE E COLORI
-                                $update = 1;
-                                $_xoldqta = 0;
-                                $_xoldqtares = 0;
-                                $xml = '<rows>';
-                                foreach ($new_doc as $c) {
-                                    $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
-                                    if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
-                                        $_xoldqta = $c->QtaVariante;
-                                        $_xoldqtares = $c->QtaRes;
+                    $update = 0;
+                    if (sizeof($new_doc) > 0) {
+                        foreach ($new_doc as $r1) {
+                            if ($r1->Cd_AR == $Cd_AR) {
+                                /*print_r($r1);
+                                echo '<br>';
+                                echo '<br>';
+                                echo '<br>';
+                                echo '<br>';*/
+                                if ($ud_vr1 == $r1->Ud_VR1 && $ud_vr2 == $r1->Ud_VR2) {
+                                    // STESSO ARTICOLO CON STESSE TAGLIE E COLORI
+                                    $update = 1;
+                                    $_xoldqta = 0;
+                                    $_xoldqtares = 0;
+                                    $xml = '<rows>';
+                                    foreach ($new_doc as $c) {
+                                        $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                                        if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
+                                            $_xoldqta = $c->QtaVariante;
+                                            $_xoldqtares = $c->QtaRes;
+                                        }
                                     }
-                                }
-                                $xml .= '</rows>';
-                                $x_update2 = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_xoldqta . '" qtares="' . $_xoldqtares . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" />', $xml);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
-                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
+                                    $xml .= '</rows>';
+                                    $x_update2 = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_xoldqta . '" qtares="' . $_xoldqtares . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" />', $xml);
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
+                                    $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
                                                             group by DORig.Id_DORIG,DORIG.QtaEvasa');
-                                /*                                echo '1-QtaEvasa =>' . intval($check_qta[0]->QtaEvasa);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo 'da evadere =>' . intval($r['quantita']);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo 'TOTALE =>' . intval($check_qta[0]->QtaEvasa) + intval($r['quantita']);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';*/
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => intval($check_qta[0]->QtaEvasa) + intval($r['quantita'])]);
-                                break;
-                            } else {
-                                // STESSO ARTICOLO MA CON DIVERSE TAGLIE E COLORI
-                                $update = 1;
-                                $xml = '<rows>';
-                                foreach ($new_doc as $c) {
-                                    $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
-                                    if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
-                                        $_xoldqta = $c->QtaVariante;
-                                        $_xoldqtares = $c->QtaRes;
+                                    /*                                echo '1-QtaEvasa =>' . intval($check_qta[0]->QtaEvasa);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo 'da evadere =>' . intval($r['quantita']);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo 'TOTALE =>' . intval($check_qta[0]->QtaEvasa) + intval($r['quantita']);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';*/
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => intval($check_qta[0]->QtaEvasa) + intval($r['quantita'])]);
+                                    break;
+                                } else {
+                                    // STESSO ARTICOLO MA CON DIVERSE TAGLIE E COLORI
+                                    $update = 1;
+                                    $xml = '<rows>';
+                                    foreach ($new_doc as $c) {
+                                        $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                                        if ($ud_vr1 == $c->Ud_VR1 && $ud_vr2 == $c->Ud_VR2) {
+                                            $_xoldqta = $c->QtaVariante;
+                                            $_xoldqtares = $c->QtaRes;
+                                        }
                                     }
-                                }
-                                $xml .= '</rows>';
+                                    $xml .= '</rows>';
 
-                                $x_update2 = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($r['quantita']) . '" qtares="' . ($r['quantita']) . '" /></rows>', $xml);
+                                    $x_update2 = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($r['quantita']) . '" qtares="' . ($r['quantita']) . '" /></rows>', $xml);
 
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
-                                $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
+                                    $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
                                                             group by DORig.Id_DORIG,DORIG.QtaEvasa');
 
-                                /*                                echo '2-QtaEvasa =>' . intval($check_qta[0]->QtaEvasa);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo 'da evadere =>' . intval($r['quantita']);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo 'TOTALE =>' . intval($check_qta[0]->QtaEvasa) + intval($r['quantita']);
-                                                                echo '<br>';
-                                                                echo '<br>';
-                                                                echo '<br>';*/
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
-                                DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => intval($check_qta[0]->QtaEvasa) + intval($r['quantita'])]);
-                                break;
+                                    /*                                echo '2-QtaEvasa =>' . intval($check_qta[0]->QtaEvasa);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo 'da evadere =>' . intval($r['quantita']);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo 'TOTALE =>' . intval($check_qta[0]->QtaEvasa) + intval($r['quantita']);
+                                                                    echo '<br>';
+                                                                    echo '<br>';
+                                                                    echo '<br>';*/
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
+                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => intval($check_qta[0]->QtaEvasa) + intval($r['quantita'])]);
+                                    break;
+                                }
                             }
                         }
                     }
+                    if ($update == 0) {
+                        /*                    echo 'QtaEvasa =>0';
+                                            echo '<br>';
+                                            echo '<br>';
+                                            echo '<br>';
+                                            echo 'da evadere =>' . intval($r['quantita']);
+                                            echo '<br>';
+                                            echo '<br>';
+                                            echo '<br>';
+                                            echo 'TOTALE =>' . intval(0) + intval($r['quantita']);
+                                            echo '<br>';
+                                            echo '<br>';
+                                            echo '<br>';*/
+                        $insert_evasione['QtaEvasa'] = intval($r['quantita']);
+                        DB::table('DoRig')->insertGetId($insert_evasione);
+                        $insert_evasione['QtaEvasa'] = null;
+                    }
+
+                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+
+                    $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $check_riga[0]->Id_DORig . '\' ')[0]->Id_DOTes;
+
+                    DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
+
+                    /* $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
+
+                     $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
+
+                     DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');*/
+
+                    DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
+
+                    DB::statement("exec asp_DO_End '$Id_DoTes_old'");
+
                 }
-                if ($update == 0) {
-                    /*                    echo 'QtaEvasa =>0';
-                                        echo '<br>';
-                                        echo '<br>';
-                                        echo '<br>';
-                                        echo 'da evadere =>' . intval($r['quantita']);
-                                        echo '<br>';
-                                        echo '<br>';
-                                        echo '<br>';
-                                        echo 'TOTALE =>' . intval(0) + intval($r['quantita']);
-                                        echo '<br>';
-                                        echo '<br>';
-                                        echo '<br>';*/
-                    $insert_evasione['QtaEvasa'] = intval($r['quantita']);
-                    DB::table('DoRig')->insertGetId($insert_evasione);
-                    $insert_evasione['QtaEvasa'] = null;
-                }
-
-                DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
-
-                $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $check_riga[0]->Id_DORig . '\' ')[0]->Id_DOTes;
-
-                DB::UPDATE('Update DoRig set QtaEvadibile = \'' . $qta_evadibile . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');
-
-                /* $qta_evasa = DB::SELECT('SELECT * FROM DORig WHERE Id_DoRig= \'' . $r['id_dorig'] . '\' ')[0]->QtaEvasa;
-
-                 $qta_evasa = intval($qta_evasa) + intval($r['quantita']);
-
-                 DB::UPDATE('Update DoRig set QtaEvasa = \'' . $qta_evasa . '\' WHERE Id_DoRig = \'' . $r['id_dorig'] . '\'');*/
-
-                DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes_old'");
-
-                DB::statement("exec asp_DO_End '$Id_DoTes_old'");
-
+                DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes1'");
+                DB::statement("exec asp_DO_End '$Id_DoTes1'");
+                $this->GestisciXml($Id_DoTes1);
             }
-            DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes1'");
-            DB::statement("exec asp_DO_End '$Id_DoTes1'");
-            $this->GestisciXml($Id_DoTes1);
+            DB::COMMIT();
+            return response('{"Success":"Evasione Completata"}', '200');
+        } catch (\Exception $e) {
+            DB::ROLLBACK();
+            return $e->getMessage();
         }
-        return response('{"Success":"Evasione Completata"}', '200');
     }
 
     public

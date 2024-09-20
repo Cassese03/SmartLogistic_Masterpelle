@@ -1031,8 +1031,8 @@
                     <br><br>
                     <label>Documento da Evadere in :</label>
                     <input type="text" readonly value="{{$session_mag['doc_evadi'] }}"
-                           style="width:100%;border:none;font-size:medium;background:transparent;">
-
+                           style="width:100%;border:none;font-size:medium;background:transparent;"> <br><br>
+                    <div id="error_evasione"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" style="width: 33%" data-dismiss="modal"
@@ -1539,6 +1539,12 @@
                 $('#modal_alertQuantita0').modal('show');
             else
                 $('#modal_alertEvasa').modal('show');
+        }).fail(function (result) {
+            $('#ajax_loader').fadeOut();
+            newElement = document.createElement('h5');
+            newElement.style.textAlign = 'center';
+            newElement.innerHTML = 'Errore durante l\'evasione ->' + result.responseText;
+            document.getElementById('error_evasione').appendChild(newElement);
         });
     }
 
