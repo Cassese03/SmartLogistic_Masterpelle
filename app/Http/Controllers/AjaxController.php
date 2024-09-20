@@ -1101,7 +1101,7 @@ class AjaxController extends Controller
                                     }
                                     $xml .= '</rows>';
                                     $x_update2 = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $_xoldqta . '" qtares="' . $_xoldqtares . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($_xoldqta + $r['quantita']) . '" qtares="' . ($_xoldqtares + $r['quantita']) . '" />', $xml);
-                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
+                                    if ($x_update2 != '') DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
                                     $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
@@ -1137,7 +1137,7 @@ class AjaxController extends Controller
 
                                     $x_update2 = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($r['quantita']) . '" qtares="' . ($r['quantita']) . '" /></rows>', $xml);
 
-                                    DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
+                                    if ($x_update2 != '') DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['x_VRData' => $x_update2]);
                                     $check_qta = DB::select('SELECT DORIG.Id_DORig,SUM(VR.Qta) as QtaVariante, SUM(VR.QtaRes) as QtaRes,QtaEvasa
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
@@ -1181,7 +1181,7 @@ class AjaxController extends Controller
                         $insert_evasione['QtaEvasa'] = null;
                     }
 
-                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                    if ($x_update != '')  DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
 
                     $Id_DoTes_old = DB::SELECT('SELECT * from DoRig where id_dorig = \'' . $check_riga[0]->Id_DORig . '\' ')[0]->Id_DOTes;
 
@@ -1227,7 +1227,8 @@ class AjaxController extends Controller
                 $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
             }
             $xml .= '</rows>';
-            DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
+            if ($xml != '')
+                DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
             DB::statement("exec asp_DO_End '$Id_DOTes'");
 
         }
