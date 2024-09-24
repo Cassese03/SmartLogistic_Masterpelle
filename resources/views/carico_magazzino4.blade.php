@@ -340,7 +340,7 @@
         <div class="page-content">
             <div class="content-sticky-footer">
 
-                <input style="width:1px;height: 1px" type="text" id="cerca_articolo2" onkeyup="check();" autofocus inputmode="numeric"
+                <input style="width:1px;height: 1px" type="text" id="cerca_articolo2" onkeyup="check();" autofocus
                        autocomplete="off">
                 <div class="background bg-125"><img src="/img/background.png" alt=""></div>
                 <div class="w-100">
@@ -641,7 +641,8 @@
                            readonly>
 
                     <label>Quantita</label>
-                    <input class="form-control" type="text" id="modal_controllo_quantita" value="" autocomplete="off">
+                    <input class="form-control" type="number" step="1" min="1" id="modal_controllo_quantita" value=""
+                           autocomplete="off">
 
                     <input class="form-control" type="hidden" id="modal_controllo_lotto" value="" autocomplete="off"
                            readonly>
