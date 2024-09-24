@@ -340,7 +340,7 @@
         <div class="page-content">
             <div class="content-sticky-footer">
 
-                <input style="width:1px;height: 1px" type="text" id="cerca_articolo2" onkeyup="check();" autofocus
+                <input style="width:1px;height: 1px" type="text" id="cerca_articolo2" onkeyup="check();" autofocus inputmode="numeric"
                        autocomplete="off">
                 <div class="background bg-125"><img src="/img/background.png" alt=""></div>
                 <div class="w-100">
