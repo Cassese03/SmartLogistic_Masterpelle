@@ -1573,7 +1573,7 @@ class AjaxController extends Controller
                 <script type="text/javascript">
 
                     $('#modal_controllo_articolo').val('<?php echo $articolo->Cd_AR ?>');
-                    $('#modal_controllo_quantita').val(1);
+
                     $('#modal_controllo_lotto').val('<?php echo $articolo->Cd_ARLotto ?>');
                     $('#modal_controllo_dorig').val('<?php echo $articolo->Id_DORig . '_' . $taglia . '_' . $colore; ?>');
                     $('#modal_controllo_dorig_tc').val('<?php echo $articolo->Id_DORig ?>');

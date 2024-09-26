@@ -641,7 +641,7 @@
                            readonly>
 
                     <label>Quantita</label>
-                    <input class="form-control" type="number" step="1" id="modal_controllo_quantita" value=""
+                    <input class="form-control" type="number" step="1" min="1" id="modal_controllo_quantita" value=""
                            autocomplete="off">
 
                     <input class="form-control" type="hidden" id="modal_controllo_lotto" value="" autocomplete="off"
