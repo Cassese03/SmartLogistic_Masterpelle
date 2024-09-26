@@ -399,7 +399,7 @@
                             </label>
                             <input value="{{ $session_mag['doc_evadi'] }}" class="form-control" id="doc_evadi"
                                    name="doc_evadi" onblur="change_mag('doc_evadi')"
-                                   list="doc_evasione">
+                                   list="doc_evasione" autocomplete="off">
                             <datalist id="doc_evasione">
                                 @foreach($flusso as $f)
                                     <option class="form-control" type="text"

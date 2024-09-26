@@ -543,7 +543,7 @@ class HomeController extends Controller
                 VR.Prezzo,
                 VR.Qta as QtaVariante, VR.QtaRes,DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR where Id_DoTes in (' . $id_dotes . ') and VR.Qta > \'0\' ORDER BY Cd_AR,Colore,xRiga');
             $session_mag = session('\'' . $id_dotes . '\'');
-            $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ');
+            $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\' ORDER BY TIMEINS DESC ');
             if (sizeof($flusso) > 0) {
                 if (!session()->has('\'' . $id_dotes . '\'')) {
                     $check_mg = DB::SELECT('SELECT * FROM MGCausale where Cd_MGCausale = (select Cd_MGCausale from do where Cd_Do =  \'' . $flusso[0]->Cd_DO . '\')');
@@ -752,7 +752,7 @@ class HomeController extends Controller
                  $documento->totale = $totali_documento[0]->TotaPagareE;
              }*/
             $articolo = DB::select('SELECT Cd_AR from DORig where Id_DoTes in (' . $id_dotes . ') group by Cd_AR');
-            $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ');
+            $flusso = DB::SELECT('select * from DODOPrel where Cd_DO_Prelevabile =\'' . $cd_do . '\'  ORDER BY TIMEINS DESC ');
             $magazzini_selected = DB::SELECT('SELECT * from MGCausale where Cd_MGCausale = (SELECT TOP 1 Cd_MGCausale FROM DO where cd_do = \'' . $cd_do . '\')');
             $magazzini = DB::SELECT('SELECT * from MG');
             if (!session()->has('\'' . $id_dotes . '\'')) {
