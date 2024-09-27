@@ -854,11 +854,7 @@
                                 onclick="$('#modal_salva_documento').modal('hide');$('#modal_elimina_documento').modal('show');">
                             No
                         </button>
-                        <?php if ($documento->Cd_Do == 'DDT'){ ?>
-                        <button type="button" class="btn btn-primary" onclick="salva_doc()">Si</button>
-                        <?php }else{ ?>
                         <button type="button" class="btn btn-primary" onclick="top.location.href='/'">Si</button>
-                        <?php } ?>
                     </div>
                 </div>
             </form>

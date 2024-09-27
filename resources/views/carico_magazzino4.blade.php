@@ -1589,7 +1589,7 @@
         }
     }
 
-    function invia() {
+    function invia() {/*
         testo = 'Il documento (documento) è stato salvato.<br> Le righe del documento sono:';
         <?php foreach ($documento->righe as $r){ ?>
             articolo = '<?php echo $r->Cd_AR ?>';
@@ -1601,10 +1601,10 @@
             url: "<?php echo URL::asset('ajax/invia_mail') ?>/<?php echo $id_dotes ?>/" + 3 + "/" + testo
         }).done(function (result) {
 
-        });
+        });*/
     }
 
-    function checkDoc() {
+    function checkDoc() {/*
         segnalazioni = '<br>';
         <?php foreach ($documento->righe as $r){ ?>
             articolo = $('#modal_Cd_AR_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
@@ -1635,7 +1635,7 @@
             }).done(function (result) {
 
             });
-        }
+        }*/
         $.ajax({
             url: "<?php echo URL::asset('ajax/id_dotes') ?>/<?php echo $id_dotes ?>"
         }).done(function (result) {
