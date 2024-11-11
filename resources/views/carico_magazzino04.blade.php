@@ -495,6 +495,9 @@
                             onclick="url = window.location.href; pos = url.search('/magazzino'); url = url.substring(0,pos);window.open(url + '/ajax/stampe/'+'<?php echo$id_dotes ?>');top.location.reload()">
                         Stampa Documento
                     </button>
+                    <button style="display: none" id="next_doc" type="button">
+                        PROSSIMO DOCUMENTO
+                    </button>
 
                 </div>
             </div>
@@ -992,6 +995,40 @@
 </html>
 
 <script type="text/javascript">
+
+    function check_next_doc() {
+
+        $.ajax({
+            url: "<?php echo URL::asset('ajax/check_next_doc') ?>/" + {{$id_dotes}},
+        }).done(function (result) {
+            if (result !== 'NODOC') {
+                element = document.getElementById('next_doc');
+                element.style.display = 'block';
+                element.style.backgroundColor = 'green';
+                element.style.border = 'green';
+                element.style.width = '80%';
+                element.style.margin = '10px auto auto auto';
+                element.classList.add('btn', 'btn-primary');
+                element.onclick = function () {
+                    var url = window.location.href;
+                    var pos = url.search('/magazzino');
+                    url = url.substring(0, pos);
+                    window.open(url + '/magazzino/carico04' + result);
+                    top.location.reload();
+                };
+            }
+        });
+
+    }
+
+    $(document).ready(function () {
+        if (document.getElementById('cd_mg_a').value == '')
+            alert('Attenzione inserire il MAGAZZINO di ARRIVO');
+        if (document.getElementById('cd_mg_p').value == '')
+            alert('Attenzione inserire il MAGAZZINO di PARTENZA');
+        check_next_doc();
+    });
+
     function change_mag() {
         $('#session').submit();
     }
@@ -1267,8 +1304,6 @@
                 $('#modal_carico').modal('show');
                 $('#ajax_modal_carico').html(result);
                 $('#modal_quantita').val(1);
-                $('#modal_carico').modal('hide');
-                carica_articolo();
             } else {
                 $('#modal_inserimento').modal('show');
                 $('#modal_inserimento_barcode').val(code);

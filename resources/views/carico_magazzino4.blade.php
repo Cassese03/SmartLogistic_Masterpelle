@@ -555,6 +555,9 @@
                         onclick="url = window.location.href; pos = url.search('/magazzino'); url = url.substring(0,pos);window.open(url + '/ajax/stampe/'+'<?php echo$id_dotes ?>');top.location.reload()">
                     Stampa Documento
                 </button>
+                <button style="display: none" id="next_doc" type="button">
+                    PROSSIMO DOCUMENTO
+                </button>
                 <?php /* if($documento->Cd_Do == 'OVC'){?>
                 <button style="margin-top:10px !important;width:80%;margin:0 auto;display:block;background-color:#007bff;border: #007bff" class="btn btn-primary" onclick="$('#modal_stampa_documento').modal('show');">Stampa Documento</button>
                 <?php } */ ?>
@@ -1208,6 +1211,41 @@
 </html>
 <script type="text/javascript">
 
+    function check_next_doc() {
+
+        $.ajax({
+            url: "<?php echo URL::asset('ajax/check_next_doc') ?>/" + {{$id_dotes}},
+        }).done(function (result) {
+            if (result !== 'NODOC') {
+                element = document.getElementById('next_doc');
+                element.style.display = 'block';
+                element.style.backgroundColor = 'green';
+                element.style.border = 'green';
+                element.style.width = '80%';
+                element.style.margin = '10px auto auto auto';
+                element.classList.add('btn', 'btn-primary');
+                element.onclick = function () {
+                    var url = window.location.href;
+                    var pos = url.search('/magazzino');
+                    url = url.substring(0, pos);
+                    window.open(url + '/magazzino/carico04' + result);
+                    top.location.reload();
+                };
+            }
+        });
+
+    }
+
+    $(document).ready(function () {
+        if (document.getElementById('cd_mg_a').value == '')
+            alert('Attenzione inserire il MAGAZZINO di ARRIVO');
+        if (document.getElementById('cd_mg_p').value == '')
+            alert('Attenzione inserire il MAGAZZINO di PARTENZA');
+        if (document.getElementById('doc_evadi').value == '')
+            alert('Attenzione inserire il DOCUMENTO di EVASIONE');
+        check_next_doc();
+    });
+
     var evadi = {};
 
     function change_mag() {
@@ -1592,7 +1630,7 @@
     function invia() {/*
         testo = 'Il documento (documento) è stato salvato.<br> Le righe del documento sono:';
         <?php foreach ($documento->righe as $r){ ?>
-            articolo = '<?php echo $r->Cd_AR ?>';
+        articolo = '<?php echo $r->Cd_AR ?>';
         quantita = '<?php echo $r->Qta ?>';
         prezzo = '<?php echo $r->PrezzoUnitarioV ?>';
         testo = testo + '<br> Articolo ' + articolo + ' quantita\' ' + Number.parseFloat(quantita).toFixed(2) + ' prezzo ' + prezzo + '<br>';
@@ -1607,7 +1645,7 @@
     function checkDoc() {/*
         segnalazioni = '<br>';
         <?php foreach ($documento->righe as $r){ ?>
-            articolo = $('#modal_Cd_AR_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
+        articolo = $('#modal_Cd_AR_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
         quantita = $('#modal_Qta_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
         lotto = $('#modal_Cd_ARLotto_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();
         quantita_evasa = $('#modal_QtaEvasa_c_<?php echo $r->Id_DORig . '_' . $r->Taglia . '_' . $r->Colore; ?>').val();

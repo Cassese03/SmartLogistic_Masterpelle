@@ -88,6 +88,22 @@
                                     </div>
                                 </a>
                             </li>
+                            <li class="list-group-item">
+                                <a href="<?php echo URL::asset('giacenza') ?>" class="media">
+                                    <div class="media-body">
+                                        <h5>Giacenza</h5>
+                                        <p>Controlla la giacenza del tuo articolo.</p>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="<?php echo URL::asset('prezzo') ?>" class="media">
+                                    <div class="media-body">
+                                        <h5>Prezzo</h5>
+                                        <p>Controlla il prezzo per listino del tuo articolo.</p>
+                                    </div>
+                                </a>
+                            </li>
                             <!--
                             <li class="list-group-item">
                                 <a href="<?php echo URL::asset('magazzino/carico2/DDT') ?>" class="media">

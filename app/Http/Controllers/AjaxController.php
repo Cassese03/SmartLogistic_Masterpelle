@@ -26,6 +26,26 @@ use Symfony\Component\VarDumper\Cloner\Data;
 class AjaxController extends Controller
 {
 
+    public function check_next_doc($id_dotes)
+    {
+        $dorig = DB::SELECT('SELECT dorig.*
+                    FROM DORig
+                    WHERE DORIG.Id_DOTes = \'' . $id_dotes . '\'');
+        $id_dorig = '';
+        foreach ($dorig as $d) {
+            $id_dorig = $id_dorig . $d->Id_DORig . ',';
+        }
+
+        $id_dorig = $id_dorig . '0';
+
+        $dotes = DB::SELECT('SELECT CF.Id_CF,D.Id_DoTes From Dorig D left join CF on CF.Cd_CF = D.Cd_CF where D.Id_Dorig_Evade in (' . $id_dorig . ')');
+        if (sizeof($dotes) > 0) {
+            return '/' . $dotes[0]->Id_CF . '/' . $dotes[0]->Id_DoTes;
+        } else {
+            return 'NODOC';
+        }
+    }
+
     public function modifica($id_dorig)
     {
         $check = explode('_', $id_dorig);
@@ -106,19 +126,24 @@ class AjaxController extends Controller
 
         $articoli = DB::select('SELECT [Id_AR],[Cd_AR],[Descrizione] FROM AR where(Cd_AR Like \'' . $q . '%\' or  Descrizione Like \'%' . $q . '%\' or CD_AR IN (SELECT CD_AR from ARAlias where Alias LIKE \'%' . $q . '%\'))  Order By Id_AR DESC');
         if (sizeof($articoli) == '0') {
-            $decoder = new Decoder($delimiter = '');
-            $barcode = $decoder->decode($q);
-            $where = ' where 1=1 ';
+            try {
 
-            foreach ($barcode->toArray()['identifiers'] as $field) {
+                $decoder = new Decoder($delimiter = '');
+                $barcode = $decoder->decode($q);
+                $where = ' where 1=1 ';
 
-                if ($field['code'] == '01') {
-                    $testo = trim($field['content'], '*,');
-                    $where .= ' and AR.Cd_AR Like \'%' . $testo . '%\'';
+                foreach ($barcode->toArray()['identifiers'] as $field) {
+
+                    if ($field['code'] == '01') {
+                        $testo = trim($field['content'], '*,');
+                        $where .= ' and AR.Cd_AR Like \'%' . $testo . '%\'';
+                    }
+
                 }
-
+                $articoli = DB::select('SELECT [Id_AR],[Cd_AR],[Descrizione] FROM AR ' . $where . '  Order By Id_AR DESC');
+            } catch (\Exception $e) {
+                return;
             }
-            $articoli = DB::select('SELECT [Id_AR],[Cd_AR],[Descrizione] FROM AR ' . $where . '  Order By Id_AR DESC');
         }
         if (sizeof($articoli) != '0')
             foreach ($articoli as $articolo) { ?>
@@ -692,8 +717,14 @@ class AjaxController extends Controller
 
         if (sizeof($articoli) > 0) {
             $articolo = $articoli[0];
-            $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
-            $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $colore . '\' ) as Colore, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            if ($taglia != 'ND')
+                $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            else
+                $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            if ($colore != 'ND')
+                $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $colore . '\' ) as Colore, INFOAR.Ud_VR2 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2 ');
+            else
+                $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,(Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore, INFOAR.Ud_VR2 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2 ');
             echo '<h3>    Barcode: ' . $articolo->barcode . '<br>
                           Codice: ' . $articolo->Cd_AR . '<br>
                           Descrizione:<br>' . $articolo->Descrizione . '</h3>';
@@ -713,8 +744,147 @@ class AjaxController extends Controller
                 $('#modal_magazzino_P').append('<option><?php echo $m->Cd_MG . ' - ' . $m->Descrizione ?></option>')
                 <?php } ?>
                 $('#modal_Cd_AR').val('<?php echo $articolo->Cd_AR ?>');
-                document.getElementById('modal_taglie').innerHTML = '<option selected taglia="<?php echo $taglia[0]->Taglia ?>"><?php echo $taglia[0]->Taglia ?></option>';
-                document.getElementById('modal_colori').innerHTML = '<option id="modal_colori_<?php echo $taglia[0]->Taglia?>" style="display:none"><?php echo $colore[0]->Colore ?></option>';
+                <?php foreach($taglia as $t){?>
+                option = document.createElement('option');
+                option.setAttribute('taglia',<?php echo $t->Taglia ?>)
+                option.value = '<?php echo $t->Taglia ?>';
+                option.innerHTML = '<?php echo $t->Taglia ?>';
+                document.getElementById('modal_taglie').appendChild(option);
+                <?php } ?>
+                <?php foreach($colore as $c){ ?>
+                option = document.createElement('option');
+                option.id = 'modal_colori_<?php echo $c->Taglia ?>';
+                option.style.display = 'none';
+                option.value = '<?php echo $c->Colore ?>';
+                option.innerHTML = '<?php echo $c->Colore ?>';
+                document.getElementById('modal_colori').appendChild(option);
+                <?php } ?>
+
+                cambioTaglia();
+            </script>
+            <?php
+        }
+    }
+
+    public
+    function cerca_articolo_prezzo($codice)
+    {
+
+        $codice = str_replace("slash", "/", $codice);
+
+
+        $articoli = DB::select('SELECT AR.Id_AR,AR.Cd_AR,AR.Descrizione,ARAlias.Alias as barcode,ARARMisura.UMFatt,LSArticolo.Prezzo from AR
+            LEFT JOIN ARAlias ON AR.Cd_AR = ARAlias.Cd_AR
+            LEFT JOIN ARARMisura ON ARARMisura.Cd_AR = AR.CD_AR
+            LEFT JOIN LSArticolo ON LSArticolo.Cd_AR = AR.Cd_AR
+            where AR.CD_AR LIKE \'' . $codice . '\' or ARAlias.Alias Like \'' . $codice . '\'
+            ');
+
+        if (sizeof($articoli) > 0) {
+            $articolo = $articoli[0];
+            $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            $colore = DB::SELECT('SELECT
+                                                (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,
+                                                (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore,
+                                                p.Prezzo,
+                                                LS.Cd_LS,
+                                                INFOAR.Ud_VR2
+                                                FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR
+                                                LEFT JOIN xmvw_LSArticoloVR p ON p.Ud_VR1 = INFOAR.Ud_VR1 and p.Ud_VR2 = INFOAR.Ud_VR2
+                                                left join LSArticolo on LSArticolo.Id_LSArticolo = p.Id_LsArticolo
+                                                left join LSRevisione on LSArticolo.Id_LSRevisione = LSRevisione.Id_LSRevisione
+                                                left join LS on LSRevisione.Cd_LS = ls.Cd_LS
+                                            WHERE AR.Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\'
+                                            GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2,LS.Cd_LS,p.Prezzo
+                                        order by INFOAR.Ud_VR2 DESC
+                                            ');
+            echo '<h3>    Barcode: ' . $articolo->barcode . '<br>
+                          Codice: ' . $articolo->Cd_AR . '<br>
+                          Descrizione:<br>' . $articolo->Descrizione . '</h3>';
+            ?>
+            <script type="text/javascript">
+
+                $('#modal_prezzo').val('<?php echo number_format($articolo->Prezzo, 2, '.', '') ?>');
+                $('#modal_Cd_AR').val('<?php echo $articolo->Cd_AR ?>');
+                <?php foreach($taglia as $t){?>
+                option = document.createElement('option');
+                option.setAttribute('taglia', '<?php echo $t->Taglia ?>')
+                option.value = '<?php echo $t->Taglia ?>';
+                option.innerHTML = '<?php echo $t->Taglia ?>';
+                document.getElementById('modal_taglie').appendChild(option);
+                <?php } ?>
+                <?php foreach($colore as $c){ ?>
+                option = document.createElement('option');
+                option.setAttribute('prezzo', '<?php echo number_format($c->Prezzo, '2', ',', ' ') ?>')
+                option.setAttribute('ls', '<?php echo str_replace(' ', '', $c->Cd_LS) ?>')
+                option.id = 'modal_colori_<?php echo $c->Taglia ?>';
+                option.style.display = 'none';
+                option.value = '<?php echo $c->Colore ?>';
+                option.innerHTML = '<?php echo $c->Colore . '[' . str_replace(' ', '', $c->Cd_LS) . ']'; ?>';
+                document.getElementById('modal_colori').appendChild(option);
+                <?php } ?>
+
+                cambioTaglia();
+            </script>
+            <?php
+        }
+    }
+
+    public
+    function cerca_articolo_giacenza($codice)
+    {
+
+        $codice = str_replace("slash", "/", $codice);
+
+
+        $articoli = DB::select('SELECT AR.Id_AR,AR.Cd_AR,AR.Descrizione,ARAlias.Alias as barcode,ARARMisura.UMFatt,LSArticolo.Prezzo from AR
+            LEFT JOIN ARAlias ON AR.Cd_AR = ARAlias.Cd_AR
+            LEFT JOIN ARARMisura ON ARARMisura.Cd_AR = AR.CD_AR
+            LEFT JOIN LSArticolo ON LSArticolo.Cd_AR = AR.Cd_AR
+            where AR.CD_AR LIKE \'' . $codice . '\' or ARAlias.Alias Like \'' . $codice . '\'
+            ');
+        if (sizeof($articoli) > 0) {
+            $articolo = $articoli[0];
+            $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            $colore = DB::SELECT('SELECT
+                                        (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,
+                                        (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore,
+                                        INFOAR.Ud_VR2,
+                                        isnull(xGD.Cd_MG,\'ND\') as Cd_MG,
+                                        isnull(xGD.Quantita,0) as Giacenza
+                                        FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR
+                                        left join xmtf_MGDispEx(YEAR(GETDATE())) xGD on xGD.Cd_AR = AR.Cd_AR and xGD.Ud_VR1 = INFOAR.Ud_VR1 and xGD.Ud_VR2 = INFOAR.Ud_VR2
+                                        WHERE AR.Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' AND xGD.Quantita IS NOT NULL AND xGD.Quantita != 0
+                                        GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2,
+                                        xGD.Cd_MG,
+                                        xGD.Quantita
+                                        order by INFOAR.Ud_VR2 DESC ');
+            echo '<h3>    Barcode: ' . $articolo->barcode . '<br>
+                          Codice: ' . $articolo->Cd_AR . '<br>
+                          Descrizione:<br>' . $articolo->Descrizione . '</h3>';
+            ?>
+            <script type="text/javascript">
+
+                $('#modal_prezzo').val('<?php echo number_format($articolo->Prezzo, 2, '.', '') ?>');
+                $('#modal_Cd_AR').val('<?php echo $articolo->Cd_AR ?>');
+                <?php foreach($taglia as $t){?>
+                option = document.createElement('option');
+                option.setAttribute('taglia', '<?php echo $t->Taglia ?>')
+                option.value = '<?php echo $t->Taglia ?>';
+                option.innerHTML = '<?php echo $t->Taglia ?>';
+                document.getElementById('modal_taglie').appendChild(option);
+                <?php } ?>
+                <?php foreach($colore as $c){ ?>
+                option = document.createElement('option');
+                option.setAttribute('giacenza', '<?php echo number_format($c->Giacenza, '2', ',', ' ') ?>')
+                option.setAttribute('mg', '<?php echo str_replace(' ', '', $c->Cd_MG) ?>')
+                option.id = 'modal_colori_<?php echo $c->Taglia ?>';
+                option.style.display = 'none';
+                option.value = '<?php echo $c->Colore ?>';
+                option.innerHTML = '<?php echo $c->Colore . '- MAG [' . str_replace(' ', '', $c->Cd_MG) . ']'; ?>';
+                document.getElementById('modal_colori').appendChild(option);
+                <?php } ?>
+
                 cambioTaglia();
             </script>
             <?php
@@ -949,6 +1119,8 @@ class AjaxController extends Controller
                 if ($testata[0]->DataDoc == $date_compare)
                     $Id_DoTes = $testata[0]->Id_DOTes;
 
+            $dotes = DB::SELECT('SELECT D.* FROM DOTes D LEFT JOIN DORig do ON do.Id_DOTes = D.Id_DOTes where do.Id_DORig in (\'' . $dorigs . '\')');
+
             if (!isset($Id_DoTes)) {
                 $Id_DoTes = '';
             }
@@ -983,6 +1155,7 @@ class AjaxController extends Controller
                         $Cd_AR = $x->Cd_AR;
                         $Cd_CGConto = $x->Cd_CGConto;
                         $Cd_Aliquota = $x->Cd_Aliquota;
+                        $NoteRiga = $x->NoteRiga;
                     }
                 }
 
@@ -1001,6 +1174,8 @@ class AjaxController extends Controller
 
                 if ($Id_DoTes == '') {
                     $Id_DoTes = DB::table('DOTes')->insertGetId(['Cd_CF' => $cd_cf, 'Cd_Do' => $documento]);
+                    DB::update("Update dotes set NumeroDocRif = '" . $dotes[0]->NumeroDocRif . "' where dotes.id_dotes = '$Id_DoTes'");
+                    DB::update("Update dotes set DataDocRif = '" . $dotes[0]->DataDocRif . "' where dotes.id_dotes = '$Id_DoTes'");
                     DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes'");
                     DB::statement("exec asp_DO_End '$Id_DoTes'");
                 }
@@ -1177,6 +1352,7 @@ class AjaxController extends Controller
                                             echo '<br>';
                                             echo '<br>';*/
                         $insert_evasione['QtaEvasa'] = intval($r['quantita']);
+                        $insert_evasione['NoteRiga'] = $NoteRiga;
                         DB::table('DoRig')->insertGetId($insert_evasione);
                         $insert_evasione['QtaEvasa'] = null;
                     }
@@ -1206,7 +1382,7 @@ class AjaxController extends Controller
             return response('{"Success":"Evasione Completata"}', '200');
         } catch (\Exception $e) {
             DB::ROLLBACK();
-            return $e->getLine().' - ' . $e->getMessage();
+            return $e->getLine() . ' - ' . $e->getMessage();
         }
     }
 
@@ -1516,7 +1692,7 @@ class AjaxController extends Controller
             foreach ($articoli as $articolo) { ?>
 
 
-                cerca_articolo_codice_2('<?php echo $cd_cf ?>','<?php echo $articolo->Cd_AR ?>','<?php if ($articolo->Cd_ARLotto != '') echo $articolo->Cd_ARLotto; else echo '0'; ?>','<?php if ($qta != '') echo $qta; else echo '0'; ?>','<?php echo $varianti[0]->taglia ?>','<?php echo $varianti[0]->colore ?>')
+                cerca_articolo_codice_2('<?php echo $cd_cf ?>','<?php echo $articolo->Cd_AR ?>','<?php if ($articolo->Cd_ARLotto != '') echo $articolo->Cd_ARLotto; else echo '0'; ?>','<?php if ($qta != '') echo $qta; else echo '0'; ?>','<?php echo (sizeof($varianti) > 0) ? $varianti[0]->taglia : 'ND' ?>','<?php echo (sizeof($varianti) > 0) ? $varianti[0]->colore : 'ND' ?>')
 
             <?php }
             /*<li class="list-group-item">
