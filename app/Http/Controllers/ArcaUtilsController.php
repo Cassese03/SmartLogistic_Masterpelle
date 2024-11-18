@@ -57,7 +57,7 @@ class ArcaUtilsController extends Controller
         }
         if($magazzino_P != '0'){
             $check_giac = DB::SELECT('
-                select Cd_MG,ISNULL(SUM(Quantita),0) AS giac from xmtf_MGDisp(GETDATE()) 
+                select Cd_MG,ISNULL(SUM(Quantita),0) AS giac from xmtf_MGDisp(year(GETDATE())) 
                 WHERE Cd_AR = \''.$codice.'\'
                 and (SELECT x_VR.Ud_x_VR from x_VR WHERE Descrizione = \''.$taglia.'\') = xmtf_MGDisp.Ud_VR1
                 and (SELECT Ud_x_VR from x_VR WHERE Descrizione = \''.$colore.'\') = xmtf_MGDisp.Ud_VR2
