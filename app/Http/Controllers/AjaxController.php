@@ -1557,11 +1557,14 @@ class AjaxController extends Controller
         if ($ubicazione_A == 'ND')
             $i++;
         if ($i > 0) {
-            ArcaUtilsController::aggiungi_articolo($id_ordine, $codice, $quantita, $magazzino_A, 1, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore);
+            $ciao = ArcaUtilsController::aggiungi_articolo($id_ordine, $codice, $quantita, $magazzino_A, 1, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore);
 
             $ordine = DB::select('SELECT * from DOTes where Id_DOtes = ' . $id_ordine)[0];
-
-            echo 'Articolo Caricato Correttamente ';
+             
+            if($ciao != 'No Giac')
+                echo 'Articolo Caricato Correttamente ';
+            else 
+                echo 'No Giac';
 
         } else {
             echo 'Ubicazione inserita inesistente in quel magazzino';

@@ -63,9 +63,12 @@ class ArcaUtilsController extends Controller
                 and (SELECT Ud_x_VR from x_VR WHERE Descrizione = \''.$colore.'\') = xmtf_MGDisp.Ud_VR2
                 and Cd_MG = \''.$magazzino_P.'\'
                 GROUP BY Cd_MG');
-                if(sizeof($check_giac)>0)
+                if(sizeof($check_giac)>0){
                     if($check_giac[0]->giac < $quantita) 
+                        return 'No Giac';
+                }else{
                     return 'No Giac';
+                }
         }
         $nuovaRiga = null;
         $cf = DB::select('SELECT * from CF Where Cd_CF IN (SELECT Cd_CF from DOTes WHere Id_DoTes = ' . $id_ordine . ')');

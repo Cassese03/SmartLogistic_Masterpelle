@@ -1170,6 +1170,10 @@
                     $('#modal_alertUbicazione').modal('show');
                 if (result == 'Articolo Caricato Correttamente ')
                     location.reload();
+                if (result == 'No Giac'){
+                    alert('Articolo senza giacenza nel magazzino di partenza.');
+                    location.reload();
+                }
             });
         } else
             $('#modal_alertQuantita').modal('show');
