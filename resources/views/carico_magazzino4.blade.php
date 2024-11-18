@@ -1433,10 +1433,11 @@
                 if (result == 'Ubicazione inserita inesistente in quel magazzino')
                     $('#modal_alertUbicazione').modal('show');
                 if (result == 'Articolo Caricato Correttamente ')
-                    $('#modal_alertInserimento').modal('show'); 
-                if (result == 'No Giac'){
+                    $('#modal_alertInserimento').modal('show');
+                if (result == 'No Giac') {
                     alert('Articolo senza giacenza nel magazzino di partenza.');
                     location.reload();
+                }
             });
 
         } else
