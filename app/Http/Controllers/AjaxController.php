@@ -1403,7 +1403,7 @@ class AjaxController extends Controller
             $qtaEvadibile = 0;
             foreach ($check_riga as $c) {
                 $qta += $c->QtaVariante;
-                $qtaEvadibile += $c->QtaResidua;
+                $qtaEvadibile += $c->QtaRes;
                 $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
             }
             $xml .= '</rows>';
