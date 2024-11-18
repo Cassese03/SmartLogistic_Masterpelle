@@ -1399,12 +1399,18 @@ class AjaxController extends Controller
                 GROUP BY VR.Ud_VR1,VR.Ud_VR2 ');
 
             $xml = '<rows>';
+            $qta = 0;
+            $qtaEvadibile = 0;
             foreach ($check_riga as $c) {
+                $qta += $c->QtaVariante;
+                $qtaEvadibile += $c->QtaResidua;
                 $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
             }
             $xml .= '</rows>';
-            if ($xml != '')
+            if ($xml != ''){
                 DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
+                DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['Qta' => $qta,'QtaEvadibile'=>$qtaEvadibile]);
+            }
             DB::statement("exec asp_DO_End '$Id_DOTes'");
 
         }

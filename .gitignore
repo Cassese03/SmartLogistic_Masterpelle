@@ -13,3 +13,13 @@ npm-debug.log
 yarn-error.log
 /public/img/ciao.pdf
 /public/img/target001.png
+.env
+.idea/modules.xml
+.idea/php.xml
+.idea/phpunit.xml
+.gitignore
+.idea/vcs.xml
+.idea/workspace.xml
+.idea/commandlinetools/Laravel_14_06_24__15_15.xml
+.idea/commandlinetools/schemas/frameworkDescriptionVersion1.1.4.xsd
+.idea/SmartLogistic_Masterpelle.iml
