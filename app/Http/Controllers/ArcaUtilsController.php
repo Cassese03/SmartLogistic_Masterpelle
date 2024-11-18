@@ -61,7 +61,7 @@ class ArcaUtilsController extends Controller
                 WHERE Cd_AR = \''.$codice.'\'
                 and (SELECT x_VR.Ud_x_VR from x_VR WHERE Descrizione = \''.$taglia.'\') = xmtf_MGDisp.Ud_VR1
                 and (SELECT Ud_x_VR from x_VR WHERE Descrizione = \''.$colore.'\') = xmtf_MGDisp.Ud_VR2
-                and Cd_MG = \''.$magazzino_P.'\'
+                and Cd_MG = \''.str_replace(' ','',$magazzino_P).'\'
                 GROUP BY Cd_MG');
                 if(sizeof($check_giac)>0){
                     if($check_giac[0]->giac < $quantita) 
