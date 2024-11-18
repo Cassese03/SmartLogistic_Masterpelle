@@ -55,7 +55,7 @@ class ArcaUtilsController extends Controller
         if ($ubicazione_P == 'ND') {
             $ubicazione_P = '0';
         }
-        if(magazzino_P != '0'){
+        if($magazzino_P != '0'){
             $check_giac = DB::SELECT('
                 select Cd_MG,ISNULL(SUM(Quantita),0) AS giac from xmtf_MGDisp(GETDATE()) 
                 WHERE Cd_AR = \''.$codice.'\'
