@@ -1113,11 +1113,11 @@ class AjaxController extends Controller
             $dorigs = '';
             foreach ($controlli as $c) {
                 $dorigs .= '\',\'' . $c->Id_DORig;
-            }
+            }/*
             $testata = DB::SELECT('SELECT * FROM DORIG WHERE Id_DORig_Evade in (\'' . $dorigs . '\')');
             if (sizeof($testata) > 0)
                 if ($testata[0]->DataDoc == $date_compare)
-                    $Id_DoTes = $testata[0]->Id_DOTes;
+                    $Id_DoTes = $testata[0]->Id_DOTes;*/
 
             $dotes = DB::SELECT('SELECT D.* FROM DOTes D LEFT JOIN DORig do ON do.Id_DOTes = D.Id_DOTes where do.Id_DORig in (\'' . $dorigs . '\')');
 
@@ -1126,13 +1126,6 @@ class AjaxController extends Controller
             }
 
             foreach ($insert as $r) {
-                /*
-                            print_r($r);
-                            echo '<br>';
-                            echo '<br>';
-                            echo '<br>';
-                            echo '<br>';*/
-
                 $identificativo = $r['id_dorig'];
 
                 $lotto = '0';
@@ -1256,11 +1249,6 @@ class AjaxController extends Controller
                     if (sizeof($new_doc) > 0) {
                         foreach ($new_doc as $r1) {
                             if ($r1->Cd_AR == $Cd_AR) {
-                                /*print_r($r1);
-                                echo '<br>';
-                                echo '<br>';
-                                echo '<br>';
-                                echo '<br>';*/
                                 if ($ud_vr1 == $r1->Ud_VR1 && $ud_vr2 == $r1->Ud_VR2) {
                                     // STESSO ARTICOLO CON STESSE TAGLIE E COLORI
                                     $update = 1;
@@ -1281,18 +1269,6 @@ class AjaxController extends Controller
                                                             FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                                                             WHERE DORig.Id_DORIG = ' . $r1->Id_DORig . '
                                                             group by DORig.Id_DORIG,DORIG.QtaEvasa');
-                                    /*                                echo '1-QtaEvasa =>' . intval($check_qta[0]->QtaEvasa);
-                                                                    echo '<br>';
-                                                                    echo '<br>';
-                                                                    echo '<br>';
-                                                                    echo 'da evadere =>' . intval($r['quantita']);
-                                                                    echo '<br>';
-                                                                    echo '<br>';
-                                                                    echo '<br>';
-                                                                    echo 'TOTALE =>' . intval($check_qta[0]->QtaEvasa) + intval($r['quantita']);
-                                                                    echo '<br>';
-                                                                    echo '<br>';
-                                                                    echo '<br>';*/
                                     DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['Qta' => $check_qta[0]->QtaVariante]);
                                     DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvadibile' => $check_qta[0]->QtaRes]);
                                     DB::table('DORig')->where('Id_DORig', $r1->Id_DORig)->update(['QtaEvasa' => intval($check_qta[0]->QtaEvasa) + intval($r['quantita'])]);
@@ -1339,18 +1315,6 @@ class AjaxController extends Controller
                         }
                     }
                     if ($update == 0) {
-                        /*                    echo 'QtaEvasa =>0';
-                                            echo '<br>';
-                                            echo '<br>';
-                                            echo '<br>';
-                                            echo 'da evadere =>' . intval($r['quantita']);
-                                            echo '<br>';
-                                            echo '<br>';
-                                            echo '<br>';
-                                            echo 'TOTALE =>' . intval(0) + intval($r['quantita']);
-                                            echo '<br>';
-                                            echo '<br>';
-                                            echo '<br>';*/
                         $insert_evasione['QtaEvasa'] = intval($r['quantita']);
                         $insert_evasione['NoteRiga'] = $NoteRiga;
                         DB::table('DoRig')->insertGetId($insert_evasione);
