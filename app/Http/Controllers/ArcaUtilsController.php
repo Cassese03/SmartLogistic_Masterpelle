@@ -200,7 +200,7 @@ class ArcaUtilsController extends Controller
                 }
             }
         } catch (\Exception $e) {
-
+            return;
         }
     }
 
