@@ -1156,6 +1156,7 @@ class AjaxController extends Controller
                 $PrezzoUnitarioV = '';
                 $Cd_AR = '';
                 $Cd_CGConto = '';
+                $NoteRiga = '';
                 $Cd_Aliquota = '';
 
                 foreach ($controlli as $x) {
@@ -1207,7 +1208,9 @@ class AjaxController extends Controller
                 VR.Qta as QtaVariante,
                 VR.QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2,
-                DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $identificativo . ') AND (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $r['colore'] . '\' and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $r['taglia'] . '\'
+                DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $identificativo . ')
+                AND DORig.Cd_AR = \'' . $Cd_AR . '\'
+                AND (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $r['colore'] . '\' and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $r['taglia'] . '\'
                 ORDER BY TIMEINS DESC');
 
                 $insert_evasione['Cd_Aliquota'] = $Cd_Aliquota;
@@ -1235,6 +1238,7 @@ class AjaxController extends Controller
                 VR.QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2,
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DORIG IN (' . $r['id_dorig'] . ')
+                AND DORig.Cd_AR = \'' . $Cd_AR . '\'
                 ORDER BY TIMEINS DESC');
 
                 $_oldqta = 0;
@@ -1260,6 +1264,7 @@ class AjaxController extends Controller
                 VR.QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2,
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE Id_DOTes IN (' . $Id_DoTes1 . ')
+                AND DORig.Cd_AR = \'' . $Cd_AR . '\'
                 ORDER BY TIMEINS DESC');
                     $update = 0;
                     if (sizeof($new_doc) > 0) {
