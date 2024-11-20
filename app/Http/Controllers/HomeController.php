@@ -659,7 +659,7 @@ class HomeController extends Controller
                     FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                     where id_dorig = \'' . $valoreCancellare . '\'');
             foreach ($dorig as $d) {
-                if (isset($dati[$d->Id_DORig . '_' . str_replace(' ', '_', $d->Taglia) . '_' . str_replace(' ', '_', $d->Colore)])) {
+                if (isset($dati[$d->Id_DORig . '_' . str_replace(' ', '_', str_replace('.','_',$d->Taglia)) . '_' . str_replace(' ', '_', str_replace('.','_',$d->Colore))])) {
                     $old_xml = '<rows>';
                     foreach ($dorig as $c) {
                         $old_xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';

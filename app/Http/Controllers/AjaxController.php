@@ -751,7 +751,7 @@ class AjaxController extends Controller
                 $('#modal_Cd_AR').val('<?php echo $articolo->Cd_AR ?>');
                 <?php foreach($taglia as $t){?>
                 option = document.createElement('option');
-                option.setAttribute('taglia',<?php echo $t->Taglia ?>)
+                option.setAttribute('taglia','<?php echo $t->Taglia ?>')
                 option.value = '<?php echo $t->Taglia ?>';
                 option.innerHTML = '<?php echo $t->Taglia ?>';
                 <?php if(strtoupper(str_replace(' ', '', $t->Ud_VR1)) == strtoupper(str_replace(' ', '', $old_taglia))) { ?>

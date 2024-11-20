@@ -34,63 +34,64 @@ class ArcaUtilsController extends Controller
 
     public static function aggiungi_articolo($id_ordine, $codice, $quantita, $magazzino_A, $fornitore = 0, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore)
     {
-        $lotto = '0';
-        $pedana = DB::select('SELECT * from ARLotto where Cd_AR =  \'' . $codice . '\' and Cd_ARLotto = \'' . $lotto . '\' ');
-        if (sizeof($pedana) != 0)
-            $pedana = $pedana[0]->xCd_xPallet;
-        else
-            $pedana = '0';
-        if ($lotto == 'Nessun Lotto') {
+        try {
             $lotto = '0';
-        }
-        if ($ubicazione_A == 'ND') {
-            $ubicazione_A = '0';
-        }
-        if ($magazzino_A == 'ND') {
-            $magazzino_A = '0';
-        }
-        if ($magazzino_P == 'ND') {
-            $magazzino_P = '0';
-        }
-        if ($ubicazione_P == 'ND') {
-            $ubicazione_P = '0';
-        }
-        if($magazzino_P != '0'){
-            $check_giac = DB::SELECT('
-                select Cd_MG,ISNULL(SUM(Quantita),0) AS giac from xmtf_MGDisp(year(GETDATE())) 
-                WHERE Cd_AR = \''.$codice.'\'
-                and (SELECT x_VR.Ud_x_VR from x_VR WHERE Descrizione = \''.$taglia.'\') = xmtf_MGDisp.Ud_VR1
-                and (SELECT Ud_x_VR from x_VR WHERE Descrizione = \''.$colore.'\') = xmtf_MGDisp.Ud_VR2
-                and Cd_MG = \''.str_replace(' ','',$magazzino_P).'\'
+            $pedana = DB::select('SELECT * from ARLotto where Cd_AR =  \'' . $codice . '\' and Cd_ARLotto = \'' . $lotto . '\' ');
+            if (sizeof($pedana) != 0)
+                $pedana = $pedana[0]->xCd_xPallet;
+            else
+                $pedana = '0';
+            if ($lotto == 'Nessun Lotto') {
+                $lotto = '0';
+            }
+            if ($ubicazione_A == 'ND') {
+                $ubicazione_A = '0';
+            }
+            if ($magazzino_A == 'ND') {
+                $magazzino_A = '0';
+            }
+            if ($magazzino_P == 'ND') {
+                $magazzino_P = '0';
+            }
+            if ($ubicazione_P == 'ND') {
+                $ubicazione_P = '0';
+            }
+            if ($magazzino_P != '0') {
+                $check_giac = DB::SELECT('
+                select Cd_MG,ISNULL(SUM(Quantita),0) AS giac from xmtf_MGDisp(year(GETDATE()))
+                WHERE Cd_AR = \'' . $codice . '\'
+                and (SELECT x_VR.Ud_x_VR from x_VR WHERE Descrizione = \'' . $taglia . '\') = xmtf_MGDisp.Ud_VR1
+                and (SELECT Ud_x_VR from x_VR WHERE Descrizione = \'' . $colore . '\') = xmtf_MGDisp.Ud_VR2
+                and Cd_MG = \'' . str_replace(' ', '', $magazzino_P) . '\'
                 GROUP BY Cd_MG');
-                if(sizeof($check_giac)>0){
-                    if($check_giac[0]->giac < $quantita) 
+                if (sizeof($check_giac) > 0) {
+                    if ($check_giac[0]->giac < $quantita)
                         return 'No Giac';
-                }else{
+                } else {
                     return 'No Giac';
                 }
-        }
-        $nuovaRiga = null;
-        $cf = DB::select('SELECT * from CF Where Cd_CF IN (SELECT Cd_CF from DOTes WHere Id_DoTes = ' . $id_ordine . ')');
-        if (sizeof($cf) > 0) {
-            $cf = $cf[0];
-            $articoli = DB::select
-            ('
+            }
+            $nuovaRiga = null;
+            $cf = DB::select('SELECT * from CF Where Cd_CF IN (SELECT Cd_CF from DOTes WHere Id_DoTes = ' . $id_ordine . ')');
+            if (sizeof($cf) > 0) {
+                $cf = $cf[0];
+                $articoli = DB::select
+                ('
                 SELECT Cd_AR,Descrizione,Cd_ARMisura
                 from AR
                 where Cd_AR = \'' . $codice . '\';
              ');
-            $RIGA = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
-            $id_dorig = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
-            $id_dotes = DB::SELECT('SELECT * FROM DOTes where Id_DoTes = \'' . $id_ordine . '\'');
-            if ($RIGA == null)
-                $RIGA = '0';
-            else
-                $RIGA = $RIGA[0]->Riga;
-            $RIGA++;
-            if (sizeof($articoli) > 0) {
-                $articolo = $articoli[0];
-                $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                $RIGA = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
+                $id_dorig = DB::SELECT('SELECT * FROM DORig where Id_DoTes = \'' . $id_ordine . '\' ORDER BY RIGA DESC');
+                $id_dotes = DB::SELECT('SELECT * FROM DOTes where Id_DoTes = \'' . $id_ordine . '\'');
+                if ($RIGA == null)
+                    $RIGA = '0';
+                else
+                    $RIGA = $RIGA[0]->Riga;
+                $RIGA++;
+                if (sizeof($articoli) > 0) {
+                    $articolo = $articoli[0];
+                    $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                 (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                 VR.Prezzo,
                 VR.Qta as QtaVariante,
@@ -98,11 +99,11 @@ class ArcaUtilsController extends Controller
                 VR.Ud_VR1,VR.Ud_VR2,
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
                 ORDER BY TIMEINS DESC');
-                $xml = '<rows>';
-                foreach ($check_riga as $c)
-                    $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
-                $xml .= '</rows>';
-                $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    $xml = '<rows>';
+                    foreach ($check_riga as $c)
+                        $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
+                    $xml .= '</rows>';
+                    $check_riga = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                         (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                         VR.Prezzo,
                         VR.Qta as QtaVariante,
@@ -111,17 +112,17 @@ class ArcaUtilsController extends Controller
                         DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ') and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $taglia . '\'
                         and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $colore . '\'
                         ORDER BY TIMEINS DESC');
-                if (sizeof($check_riga) > 0) {
-                    $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
-                    $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
-                    $x_update = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $check_riga[0]->QtaVariante . '" qtares="' . $check_riga[0]->QtaRes . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($check_riga[0]->QtaVariante + $quantita) . '" qtares="' . ($check_riga[0]->QtaRes + $quantita) . '" />', $xml);
-                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
-                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['Qta' => $check_riga[0]->Qta + $quantita]);
-                    DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga[0]->QtaEvadibile + $quantita]);
-                    ArcaUtilsController::calcola_totale_ordine($id_ordine);
-                    return;
-                }
-                $check_riga2 = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
+                    if (sizeof($check_riga) > 0) {
+                        $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
+                        $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
+                        $x_update = str_replace('<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $check_riga[0]->QtaVariante . '" qtares="' . $check_riga[0]->QtaRes . '" />', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($check_riga[0]->QtaVariante + $quantita) . '" qtares="' . ($check_riga[0]->QtaRes + $quantita) . '" />', $xml);
+                        DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                        DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['Qta' => $check_riga[0]->Qta + $quantita]);
+                        DB::table('DORig')->where('Id_DORig', $check_riga[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga[0]->QtaEvadibile + $quantita]);
+                        ArcaUtilsController::calcola_totale_ordine($id_ordine);
+                        return;
+                    }
+                    $check_riga2 = DB::SELECT('SELECT (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                         (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore,
                         VR.Prezzo,
                         VR.Qta as QtaVariante,
@@ -130,73 +131,76 @@ class ArcaUtilsController extends Controller
                         DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
                         and DORig.Cd_AR = \'' . $codice . '\'
                         ORDER BY TIMEINS DESC');
-                if (sizeof($check_riga2) > 0) {
-                    $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
-                    $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
-                    $x_update = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($quantita) . '" qtares="' . (+$quantita) . '" /></rows>', $xml);
-                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['x_VRData' => $x_update]);
-                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['Qta' => $check_riga2[0]->Qta + $quantita]);
-                    DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga2[0]->QtaEvadibile + $quantita]);
-                    ArcaUtilsController::calcola_totale_ordine($id_ordine);
-                    return;
-                }
-                if ($taglia != 'ND' && $colore != 'ND') {
-                    $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
-                    $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
-                    $insert_righe_ordine['x_VRData'] = '<rows>
+                    if (sizeof($check_riga2) > 0) {
+                        $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
+                        $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
+                        $x_update = str_replace('</rows>', '<row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . ($quantita) . '" qtares="' . (+$quantita) . '" /></rows>', $xml);
+                        DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['x_VRData' => $x_update]);
+                        DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['Qta' => $check_riga2[0]->Qta + $quantita]);
+                        DB::table('DORig')->where('Id_DORig', $check_riga2[0]->Id_DORig)->update(['QtaEvadibile' => $check_riga2[0]->QtaEvadibile + $quantita]);
+                        ArcaUtilsController::calcola_totale_ordine($id_ordine);
+                        return;
+                    }
+                    if ($taglia != 'ND' && $colore != 'ND') {
+                        $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
+                        $ud_vr2 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $colore . '\'')[0]->Ud_x_VR;
+                        $insert_righe_ordine['x_VRData'] = '<rows>
 <row ud_vr1="' . $ud_vr1 . '" ud_vr2="' . $ud_vr2 . '" qta="' . $quantita . '" qtares="' . $quantita . '" />
 </rows>';
+                    }
+                    $insert_righe_ordine['Id_DoTes'] = $id_ordine;
+                    $insert_righe_ordine['Cd_AR'] = $articolo->Cd_AR;
+                    $insert_righe_ordine['Riga'] = $RIGA;
+                    $insert_righe_ordine['Descrizione'] = $articolo->Descrizione;
+                    $insert_righe_ordine['Cd_MGEsercizio'] = date('Y');
+                    $insert_righe_ordine['Cd_ARMisura'] = $articolo->Cd_ARMisura;
+                    $insert_righe_ordine['Cd_VL'] = 'EUR';
+                    $insert_righe_ordine['Qta'] = $quantita;
+                    $insert_righe_ordine['QtaEvadibile'] = $quantita;
+                    $insert_righe_ordine['Cambio'] = 1;
+                    $insert_righe_ordine['PrezzoUnitarioV'] = '';
+                    /*if(str_replace(' ','',$id_dotes[0]->Cd_Do) != 'TRM'){
+                        $sconto = DB::SELECT('SELECT * FROM CF WHERE Cd_CF = \'' . $cf->Cd_CF . '\'');
+                        if (sizeof($sconto) != '0')
+                            $insert_righe_ordine['ScontoRiga'] = $sconto[0]->Sconto;
+                    }*/
+                    if ($id_dotes[0]->Cd_LS_1 != '') {
+                        $prezzo = DB::SELECT('SELECT * FROM LSRevisione WHERE Cd_LS = \'' . $id_dotes[0]->Cd_LS_1 . '\'');
+                        if (sizeof($prezzo) != '0')
+                            $prezzo = DB::SELECT('SELECT * FROM LSArticolo WHERE Id_LSRevisione =\'' . $prezzo[0]->Id_LSRevisione . '\' and Cd_AR = \'' . $codice . '\' ');
+                        if (sizeof($prezzo) != '0')
+                            $insert_righe_ordine['PrezzoUnitarioV'] = $prezzo[0]->Prezzo;
+                    }
+
+                    if ($insert_righe_ordine['PrezzoUnitarioV'] == '' || $id_dotes[0]->Cd_Do == 'TRM') {
+                        $prezzo = DB::SELECT('SELECT * FROM DORIG WHERE Cd_AR = \'' . $codice . '\' and Cd_DO =\'BC\' Order By Id_DORig DESC ');
+                        if (sizeof($prezzo) == 0)
+                            $insert_righe_ordine['PrezzoUnitarioV'] = '0';
+                        else
+                            $insert_righe_ordine['PrezzoUnitarioV'] = $prezzo[0]->PrezzoUnitarioV;
+                    }
+                    $insert_righe_ordine['Cd_Aliquota'] = $cf->Cd_Aliquota;
+                    if ($insert_righe_ordine['Cd_Aliquota'] == '')
+                        $insert_righe_ordine['Cd_Aliquota'] = '22';
+                    $insert_righe_ordine['Cd_CGConto'] = '06010105001';//DB::SELECT('SELECT * FROM IMPOSTAZIONE WHERE Id_Impostazione = \'7\'')[0]->Cd_CGConto_1;
+                    $documento = DB::SELECT('SELECT * FROM DO WHERE Cd_DO = \'' . $id_dotes[0]->Cd_Do . '\'');
+                    /*
+                    if($documento[0]->CliFor =='C')
+                    $insert_righe_ordine['Cd_CGConto'] = DB::SELECT('SELECT * FROM IMPOSTAZIONE WHERE Id_Impostazione = \'7\'')[0]->Cd_CGConto_2;
+                    if($insert_righe_ordine['Cd_CGConto'] == '')
+                        $insert_righe_ordine['Cd_CGConto'] = $cf->Cd_CGConto_Mastro;
+                    */
+
+                    if ($magazzino_A != 0) $insert_righe_ordine['Cd_MG_A'] = $magazzino_A;
+                    if ($magazzino_P != 0) $insert_righe_ordine['Cd_MG_P'] = $magazzino_P;
+
+                    DB::table('DORig')->insertGetId($insert_righe_ordine);
+                    ArcaUtilsController::calcola_totale_ordine($id_ordine);
+
                 }
-                $insert_righe_ordine['Id_DoTes'] = $id_ordine;
-                $insert_righe_ordine['Cd_AR'] = $articolo->Cd_AR;
-                $insert_righe_ordine['Riga'] = $RIGA;
-                $insert_righe_ordine['Descrizione'] = $articolo->Descrizione;
-                $insert_righe_ordine['Cd_MGEsercizio'] = date('Y');
-                $insert_righe_ordine['Cd_ARMisura'] = $articolo->Cd_ARMisura;
-                $insert_righe_ordine['Cd_VL'] = 'EUR';
-                $insert_righe_ordine['Qta'] = $quantita;
-                $insert_righe_ordine['QtaEvadibile'] = $quantita;
-                $insert_righe_ordine['Cambio'] = 1;
-                $insert_righe_ordine['PrezzoUnitarioV'] = '';
-                /*if(str_replace(' ','',$id_dotes[0]->Cd_Do) != 'TRM'){
-                    $sconto = DB::SELECT('SELECT * FROM CF WHERE Cd_CF = \'' . $cf->Cd_CF . '\'');
-                    if (sizeof($sconto) != '0')
-                        $insert_righe_ordine['ScontoRiga'] = $sconto[0]->Sconto;
-                }*/
-                if ($id_dotes[0]->Cd_LS_1 != '') {
-                    $prezzo = DB::SELECT('SELECT * FROM LSRevisione WHERE Cd_LS = \'' . $id_dotes[0]->Cd_LS_1 . '\'');
-                    if (sizeof($prezzo) != '0')
-                        $prezzo = DB::SELECT('SELECT * FROM LSArticolo WHERE Id_LSRevisione =\'' . $prezzo[0]->Id_LSRevisione . '\' and Cd_AR = \'' . $codice . '\' ');
-                    if (sizeof($prezzo) != '0')
-                        $insert_righe_ordine['PrezzoUnitarioV'] = $prezzo[0]->Prezzo;
-                }
-
-                if ($insert_righe_ordine['PrezzoUnitarioV'] == '' || $id_dotes[0]->Cd_Do == 'TRM') {
-                    $prezzo = DB::SELECT('SELECT * FROM DORIG WHERE Cd_AR = \'' . $codice . '\' and Cd_DO =\'BC\' Order By Id_DORig DESC ');
-                    if (sizeof($prezzo) == 0)
-                        $insert_righe_ordine['PrezzoUnitarioV'] = '0';
-                    else
-                        $insert_righe_ordine['PrezzoUnitarioV'] = $prezzo[0]->PrezzoUnitarioV;
-                }
-                $insert_righe_ordine['Cd_Aliquota'] = $cf->Cd_Aliquota;
-                if ($insert_righe_ordine['Cd_Aliquota'] == '')
-                    $insert_righe_ordine['Cd_Aliquota'] = '22';
-                $insert_righe_ordine['Cd_CGConto'] = '06010105001';//DB::SELECT('SELECT * FROM IMPOSTAZIONE WHERE Id_Impostazione = \'7\'')[0]->Cd_CGConto_1;
-                $documento = DB::SELECT('SELECT * FROM DO WHERE Cd_DO = \'' . $id_dotes[0]->Cd_Do . '\'');
-                /*
-                if($documento[0]->CliFor =='C')
-                $insert_righe_ordine['Cd_CGConto'] = DB::SELECT('SELECT * FROM IMPOSTAZIONE WHERE Id_Impostazione = \'7\'')[0]->Cd_CGConto_2;
-                if($insert_righe_ordine['Cd_CGConto'] == '')
-                    $insert_righe_ordine['Cd_CGConto'] = $cf->Cd_CGConto_Mastro;
-                */
-
-                if ($magazzino_A != 0) $insert_righe_ordine['Cd_MG_A'] = $magazzino_A;
-                if ($magazzino_P != 0) $insert_righe_ordine['Cd_MG_P'] = $magazzino_P;
-
-                DB::table('DORig')->insertGetId($insert_righe_ordine);
-                ArcaUtilsController::calcola_totale_ordine($id_ordine);
-
             }
+        } catch (\Exception $e) {
+
         }
     }
 
