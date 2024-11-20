@@ -98,6 +98,7 @@ class ArcaUtilsController extends Controller
                 VR.QtaRes,
                 VR.Ud_VR1,VR.Ud_VR2,
                 DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
+                        and DORig.Cd_AR = \'' . $codice . '\'
                 ORDER BY TIMEINS DESC');
                     $xml = '<rows>';
                     foreach ($check_riga as $c)
@@ -109,8 +110,10 @@ class ArcaUtilsController extends Controller
                         VR.Qta as QtaVariante,
                         VR.QtaRes,
                         VR.Ud_VR1,VR.Ud_VR2,
-                        DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ') and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $taglia . '\'
+                        DORig.* FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR WHERE ID_DOTES IN (' . $id_ordine . ')
+                        and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) = \'' . $taglia . '\'
                         and (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) = \'' . $colore . '\'
+                        and DORig.Cd_AR = \'' . $codice . '\'
                         ORDER BY TIMEINS DESC');
                     if (sizeof($check_riga) > 0) {
                         $ud_vr1 = DB::SELECT('SELECT * from x_VR WHERE Descrizione = \'' . $taglia . '\'')[0]->Ud_x_VR;
