@@ -717,12 +717,17 @@ class AjaxController extends Controller
 
         if (sizeof($articoli) > 0) {
             $articolo = $articoli[0];
+
+            $old_taglia = $taglia;
+
+            $old_colore = $colore;
+
             if ($taglia != 'ND')
-                $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+                $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Ud_VR1 = \'' . $taglia . '\' and Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
             else
                 $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
             if ($colore != 'ND')
-                $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $taglia . '\' ) as Taglia, (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $colore . '\' ) as Colore, INFOAR.Ud_VR2 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2 ');
+                $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $old_taglia . '\' ) as Taglia, (Select Descrizione from x_VR WHERE Ud_x_VR = \'' . $colore . '\' ) as Colore, INFOAR.Ud_VR2 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Ud_VR1 = \'' . $old_taglia . '\' and Ud_VR2 = \'' . $colore . '\' and Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2 ');
             else
                 $colore = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,(Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore, INFOAR.Ud_VR2 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1,INFOAR.Ud_VR2 ');
             echo '<h3>    Barcode: ' . $articolo->barcode . '<br>
@@ -749,7 +754,12 @@ class AjaxController extends Controller
                 option.setAttribute('taglia',<?php echo $t->Taglia ?>)
                 option.value = '<?php echo $t->Taglia ?>';
                 option.innerHTML = '<?php echo $t->Taglia ?>';
+                <?php if(strtoupper(str_replace(' ', '', $t->Ud_VR1)) == strtoupper(str_replace(' ', '', $old_taglia))) { ?>
+                option.selected = true;
+                document.getElementById('modal_taglie').innerHTML = option.outerHTML;
+                <?php }else{?>
                 document.getElementById('modal_taglie').appendChild(option);
+                <?php } ?>
                 <?php } ?>
                 <?php foreach($colore as $c){ ?>
                 option = document.createElement('option');
@@ -757,10 +767,16 @@ class AjaxController extends Controller
                 option.style.display = 'none';
                 option.value = '<?php echo $c->Colore ?>';
                 option.innerHTML = '<?php echo $c->Colore ?>';
+                <?php if(strtoupper(str_replace(' ', '', $c->Ud_VR2)) == strtoupper(str_replace(' ', '', $old_colore))) { ?>
+                option.selected = true;
+                document.getElementById('modal_colori').innerHTML = option.outerHTML;
+                carica_articolo();
+                <?php }else{?>
                 document.getElementById('modal_colori').appendChild(option);
                 <?php } ?>
+                <?php } ?>
 
-                cambioTaglia();
+                //cambioTaglia();
             </script>
             <?php
         }
@@ -1371,9 +1387,9 @@ class AjaxController extends Controller
                 $xml .= '<row ud_vr1="' . $c->Ud_VR1 . '" ud_vr2="' . $c->Ud_VR2 . '" qta="' . $c->QtaVariante . '" qtares="' . $c->QtaRes . '" />';
             }
             $xml .= '</rows>';
-            if ($xml != ''){
+            if ($xml != '') {
                 DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['x_VRData' => $xml]);
-                DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['Qta' => $qta,'QtaEvadibile'=>$qtaEvadibile]);
+                DB::table('DORig')->where('Id_DORig', $d->Id_DORig)->update(['Qta' => $qta, 'QtaEvadibile' => $qtaEvadibile]);
             }
             DB::statement("exec asp_DO_End '$Id_DOTes'");
 
@@ -1560,10 +1576,10 @@ class AjaxController extends Controller
             $ciao = ArcaUtilsController::aggiungi_articolo($id_ordine, $codice, $quantita, $magazzino_A, 1, $ubicazione_A, $lotto, $magazzino_P, $ubicazione_P, $taglia, $colore);
 
             $ordine = DB::select('SELECT * from DOTes where Id_DOtes = ' . $id_ordine)[0];
-             
-            if($ciao != 'No Giac')
+
+            if ($ciao != 'No Giac')
                 echo 'Articolo Caricato Correttamente ';
-            else 
+            else
                 echo 'No Giac';
 
         } else {

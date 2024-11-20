@@ -1306,8 +1306,8 @@
         }).done(function (result) {
             if (result != '') {
                 $('#modal_carico').modal('show');
-                $('#ajax_modal_carico').html(result);
                 $('#modal_quantita').val(1);
+                $('#ajax_modal_carico').html(result);
             } else {
                 $('#modal_inserimento').modal('show');
                 $('#modal_inserimento_barcode').val(code);
