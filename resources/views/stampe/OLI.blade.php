@@ -1,10 +1,19 @@
 <?php $dorig = DB::SELECT('SELECT dorig.*,AR.Descrizione as Desc_AR,
                     VR.Qta as Qta_VR,
+                    x_VRGruppo.Descrizione as ScalaNumerica,
+                    A2.Descrizione as Pellame,
+                    DOTes.NumeroDoc,
+                    DORig.NoteRiga,
                     (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                     (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore
                     FROM DORIG outer apply dbo.xmtf_DORigVRInfo(DORig.x_VRData) VR
                     LEFT JOIN AR ON DORIG.Cd_AR = AR.Cd_AR
+                    LEFT JOIN DOTES ON DOTES.Id_DOTes = DORIG.Id_DOTes
+                    Left Join x_ARAttributo A2 On A2.Ud_x_ARAttributo = AR.x_Ud_ARAttributo2
+                    LEFT JOIN x_VRGruppo ON x_VRGruppo.Ud_x_VRGruppo = AR.x_Ud_VRGruppo1
                     WHERE DORIG.Id_DOTes = \'' . $id_dotes->Id_DoTes . '\'');
+
+
 /*
 $cliente = DB::SELECT('SELECT * FROM CF WHERE Cd_CF = \'' . $id_dotes->Cd_CF . '\'')[0];
 $contatto = DB::SELECT('SELECT * FROM CFContatto WHERE Cd_CF = \'' . $id_dotes->Cd_CF . '\'')[0];
@@ -74,11 +83,11 @@ $html .= '
     <div style="text-align:left;position: absolute;top: 30px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Cd_AR . '</div>
     <div style="text-align:left;position: absolute;top: 45px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Desc_AR . '</div>';
 $html .= '
-    <div style="text-align:left;position: absolute;top: 70px; left: 125px;z-index:10;font-size:16px;font-weight:bolder;">PELLAME</div>
+    <div style="text-align:left;position: absolute;top: 70px; left: 125px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Pellame . '</div>
     <div style="text-align:left;position: absolute;top: 100px;left: 125px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Colore . '</div>';
 $html .= '
     <div style="text-align:left;position: absolute;top: 173px;left: 420px;z-index:10;font-size:12px">' . date('d/m/Y', strtotime($dorig[0]->DataDoc)) . '</div>
-    <div style="text-align:left;position: absolute;top: 188px;left: 420px;z-index:10;font-size:12px">SCALA NUMERICA</div>
+    <div style="text-align:left;position: absolute;top: 188px;left: 420px;z-index:10;font-size:12px">' . $dorig[0]->ScalaNumerica . '</div>
     <div style="text-align:left;position: absolute;top: 203px;left: 420px;z-index:10;font-size:12px"> </div>';
 /*foreach ($dorig as $d) {
     if ($d->Taglia != '' && $d->Colore) {
