@@ -2,7 +2,7 @@
                     VR.Qta as Qta_VR,
                     x_VRGruppo.Descrizione as ScalaNumerica,
                     A2.Descrizione as Pellame,
-                    DOTes.NumeroDoc,
+                    DOTes.NumeroDocRif,
                     DORig.NoteRiga,
                     (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR1) as Taglia,
                     (SELECT descrizione from x_VR WHERE Ud_x_VR = VR.Ud_VR2) as Colore
@@ -153,6 +153,8 @@ foreach ($dorig as $d) {
 
         $html .= '<div style="text-align:center;position: absolute;top: ' . $top . 'px;left: ' . $left . 'px;z-index:10;font-size:12px">
         <label>' . number_format($d->Qta_VR, 0, ',', '.') . '</label><br></div>';
+        $html .= '<div style="text-align:left;position: absolute;top: 342px; left: 80px ;z-index:10;font-size:12px;"> '. $dorig[0]->NoteRiga  . '  </div>';
+        $html .= '<div style="text-align:left;position: absolute;top: 255px; left: 80px ;z-index:10;font-size:12px;">  '. $dorig[0]->NumeroDocRif  . ' </div>';
     }
 
 }
