@@ -86,7 +86,16 @@ class AjaxController extends Controller
         DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes exec asp_DO_End $id_dotes");
         DB::statement("exec asp_DO_End $id_dotes");
         $id_dotes = DB::SELECT('SELECT * FROM DOTes WHERE Id_DOTes = \'' . $id_dotes . '\'')[0];
-        $html = View::make('stampe.generico', compact('id_dotes'));
+        if ($id_dotes->Cd_Do == 'TSI' || $id_dotes->Cd_Do == 'OLI') {
+            if ($id_dotes->Cd_Do == 'TSI') {
+                $html = View::make('stampe.tsi', compact('id_dotes'));
+            }
+            if ($id_dotes->Cd_Do == 'OLI') {
+                $html = View::make('stampe.oli', compact('id_dotes'));
+            }
+        } else {
+            $html = View::make('stampe.generico', compact('id_dotes'));
+        }
         $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8']);
         $mpdf->curlAllowUnsafeSslRequests = true;
         $mpdf->SetTitle($id_dotes->Cd_Do);
@@ -751,7 +760,7 @@ class AjaxController extends Controller
                 $('#modal_Cd_AR').val('<?php echo $articolo->Cd_AR ?>');
                 <?php foreach($taglia as $t){?>
                 option = document.createElement('option');
-                option.setAttribute('taglia','<?php echo $t->Taglia ?>')
+                option.setAttribute('taglia', '<?php echo $t->Taglia ?>')
                 option.value = '<?php echo $t->Taglia ?>';
                 option.innerHTML = '<?php echo $t->Taglia ?>';
                 <?php if(strtoupper(str_replace(' ', '', $t->Ud_VR1)) == strtoupper(str_replace(' ', '', $old_taglia))) { ?>
