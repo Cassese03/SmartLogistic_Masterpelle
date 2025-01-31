@@ -96,12 +96,12 @@ class AjaxController extends Controller
         } else {
             $html = View::make('stampe.generico', compact('id_dotes'));
         }
-        $mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8']);
+        /*$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8']);
         $mpdf->curlAllowUnsafeSslRequests = true;
         $mpdf->SetTitle($id_dotes->Cd_Do);
         $mpdf->WriteHTML($html);
-        $mpdf->Output($id_dotes->Cd_Do . rand(0, 1000) . '.pdf', 'I');
-
+        $mpdf->Output($id_dotes->Cd_Do . rand(0, 1000) . '.pdf', 'I');*/
+        return $html;
     }
 
     public function cerca_documento($id_dotes)
@@ -870,7 +870,7 @@ class AjaxController extends Controller
             ');
         if (sizeof($articoli) > 0) {
             $articolo = $articoli[0];
-            $taglia = DB::SELECT('SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1 ');
+            $taglia = DB::SELECT('SELECT * FROM (SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1) f order by f.Taglia Desc ');
             $colore = DB::SELECT('SELECT
                                         (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,
                                         (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore,

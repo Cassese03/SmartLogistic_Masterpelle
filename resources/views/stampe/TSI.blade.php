@@ -72,6 +72,7 @@ $html = '<!DOCTYPE html>
             font-family: Tahoma;
        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
 
@@ -80,12 +81,15 @@ $html = '<!DOCTYPE html>
 $html .= URL::asset('img/TSI.png');
 $html .= '" alt="TSI" style="width:99%;z-index:1;filter: grayscale(99%);">';
 $html .= '
+    <div style="position: absolute;top: 100px;left: 370px;z-index:10;">
+        <svg id="barcode"></svg>
+    </div>';
+$html .= '
     <div style="text-align:left;position: absolute;top: 30px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Cd_AR . '</div>
     <div style="text-align:left;position: absolute;top: 45px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Desc_AR . '</div>';
 $html .= '
     <div style="text-align:left;position: absolute;top: 66px; left: 90px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Pellame . '</div>
-    <div style="text-align:left;position: absolute;top: 85px;left: 87px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Colore . '</div>';
-$html .= '
+    <div style="text-align:left;position: absolute;top: 85px;left: 87px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Colore . '</div>
     <div style="text-align:left;position: absolute;top: 170px;left: 420px;z-index:10;font-size:12px">' . date('d/m/Y', strtotime($dorig[0]->DataDoc)) . '</div>
     <div style="text-align:left;position: absolute;top: 185px;left: 405px;z-index:10;font-size:12px">' . $dorig[0]->ScalaNumerica . '</div>';
 
@@ -166,7 +170,19 @@ $html .= '
 </body>';
 
 $html .= '
-</html >
+</html>
+
+<script>
+    document.addEventListener(\'DOMContentLoaded\', function () {
+        JsBarcode("#barcode", "'.$dorig[0]->Id_DOTes.'", {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 1,
+            height: 25,
+            displayValue: true
+        });
+    });
+</script>
 <script type = "text/javascript" >
         window.print();
 </script > ';
