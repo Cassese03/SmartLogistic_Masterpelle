@@ -121,28 +121,55 @@ foreach ($dorig as $d) {
             case '44':
                 $left = 195;
                 break;
+            case '2XS':
+                $left = 195;
+                break;
             case '46':
+                $left = 215;
+                break;
+            case 'XS':
                 $left = 215;
                 break;
             case '48':
                 $left = 240;
                 break;
+            case 'S':
+                $left = 240;
+                break;
             case '50':
+                $left = 260;
+                break;
+            case 'M':
                 $left = 260;
                 break;
             case '52':
                 $left = 280;
                 break;
+            case 'L':
+                $left = 280;
+                break;
             case '54':
+                $left = 302;
+                break;
+            case 'XL':
                 $left = 302;
                 break;
             case '56':
                 $left = 324;
                 break;
+            case '2XL':
+                $left = 324;
+                break;
             case '58':
                 $left = 345;
                 break;
+            case '3XL':
+                $left = 345;
+                break;
             case '60':
+                $left = 367;
+                break;
+            case '4XL':
                 $left = 367;
                 break;
             case '62':
