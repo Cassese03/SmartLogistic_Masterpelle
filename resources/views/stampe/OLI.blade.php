@@ -85,6 +85,10 @@ $html .= '
         <svg id="barcode"></svg>
     </div>';
 $html .= '
+    <div style="position: absolute;top: 130px;left: 455px;z-index:10;">
+        <p style="font-size:14px;">' . $dorig[0]->Cd_DO . ' - ' . $dorig[0]->NumeroDoc . '</p>
+    </div>';
+$html .= '
     <div style="text-align:left;position: absolute;top: 30px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Cd_AR . '</div>
     <div style="text-align:left;position: absolute;top: 45px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Desc_AR . '</div>';
 $html .= '
@@ -94,16 +98,6 @@ $html .= '
     <div style="text-align:left;position: absolute;top: 173px;left: 420px;z-index:10;font-size:12px">' . date('d/m/Y', strtotime($dorig[0]->DataDoc)) . '</div>
     <div style="text-align:left;position: absolute;top: 188px;left: 420px;z-index:10;font-size:12px">' . $dorig[0]->ScalaNumerica . '</div>
     <div style="text-align:left;position: absolute;top: 203px;left: 420px;z-index:10;font-size:12px"> </div>';
-/*foreach ($dorig as $d) {
-    if ($d->Taglia != '' && $d->Colore) {
-        $html .= '<label>' . substr($d->Descrizione, 0, 20) . '</label>';
-        $html .= '<label> Taglia : ' . $d->Taglia . ' - Colore : ' . $d->Colore . '</label><br>';
-    } else {
-        $html .= '<label>' . substr($d->Descrizione, 0, 20) . '</label><br>';
-    }
-}
-$html .= '
-    </div>';*/
 
 $html .= '<div style="text-align:center;position: absolute;top: 261px;left:450px;z-index:10;font-size:12px">
         <label>' . number_format($dorig[0]->Qta, 0, ',', '.') . '</label><br></div>';

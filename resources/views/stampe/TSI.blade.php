@@ -85,6 +85,10 @@ $html .= '
         <svg id="barcode"></svg>
     </div>';
 $html .= '
+    <div style="position: absolute;top: 130px;left: 455px;z-index:10;">
+        <p style="font-size:14px;">' . $dorig[0]->Cd_DO . ' - ' . $dorig[0]->NumeroDoc . '</p>
+    </div>';
+$html .= '
     <div style="text-align:left;position: absolute;top: 30px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Cd_AR . '</div>
     <div style="text-align:left;position: absolute;top: 45px;left: 20px;z-index:10;font-size:16px;font-weight:bolder;">' . $dorig[0]->Desc_AR . '</div>';
 $html .= '

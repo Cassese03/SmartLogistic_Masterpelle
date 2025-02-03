@@ -870,7 +870,10 @@ class AjaxController extends Controller
             ');
         if (sizeof($articoli) > 0) {
             $articolo = $articoli[0];
-            $taglia = DB::SELECT('SELECT * FROM (SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1) f order by f.Taglia Desc ');
+            $taglia = DB::SELECT('SELECT * FROM
+             (SELECT (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia, INFOAR.Ud_VR1 FROM AR outer apply dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR WHERE Cd_AR = \'' . $articolo->Cd_AR . '\' and INFOAR.Obsoleto = \'false\' GROUP BY INFOAR.Ud_VR1)
+              f
+              Left Join x_VRVRGruppo On x_VRVRGruppo.Ud_VR = F.Ud_VR1 order by x_VRVRGruppo.Riga Desc ');
             $colore = DB::SELECT('SELECT
                                         (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) as Taglia,
                                         (Select Descrizione from x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) as Colore,
