@@ -106,20 +106,23 @@ foreach ($dorig as $d) {
         $top = 320;
         $left = 100;
         switch ($d->Taglia) {
+            case '36':
+                $left = 105;
+                break;
             case '38':
                 $left = 130;
                 break;
             case '40':
-                $left = 150;
+                $left = 152;
                 break;
             case '42':
-                $left = 170;
+                $left = 175;
                 break;
             case '44':
-                $left = 192;
+                $left = 195;
                 break;
             case '46':
-                $left = 213;
+                $left = 215;
                 break;
             case '48':
                 $left = 240;
@@ -131,25 +134,27 @@ foreach ($dorig as $d) {
                 $left = 280;
                 break;
             case '54':
-                $left = 300;
+                $left = 302;
                 break;
             case '56':
-                $left = 320;
+                $left = 324;
                 break;
             case '58':
-                $left = 340;
+                $left = 345;
                 break;
-            case '60s':
-                $left = 360;
+            case '60':
+                $left = 367;
                 break;
             case '62':
-                $left = 380;
+                $left = 386;
                 break;
             case '64':
-                $left = 400;
+                $left = 407;
+                break;
+            default:
+                $left = 450;
                 break;
         }
-
         $html .= '<div style="text-align:center;position: absolute;top: ' . $top . 'px;left: ' . $left . 'px;z-index:10;font-size:12px">
         <label>' . number_format($d->Qta_VR, 0, ',', '.') . '</label><br></div>';
         $html .= '<div style="text-align:left;position: absolute;top: 342px; left: 80px ;z-index:10;font-size:12px;"> ' . $dorig[0]->NoteRiga . '  </div>';

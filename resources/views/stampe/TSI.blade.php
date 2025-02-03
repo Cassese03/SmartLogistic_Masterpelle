@@ -115,47 +115,53 @@ foreach ($dorig as $d) {
         $top = 320;
         $left = 100;
         switch ($d->Taglia) {
+            case '36':
+                $left = 105;
+                break;
             case '38':
                 $left = 130;
                 break;
             case '40':
-                $left = 150;
+                $left = 152;
                 break;
             case '42':
-                $left = 170;
+                $left = 172;
                 break;
             case '44':
-                $left = 192;
+                $left = 195;
                 break;
             case '46':
-                $left = 213;
+                $left = 215;
                 break;
             case '48':
-                $left = 240;
+                $left = 235;
                 break;
             case '50':
-                $left = 260;
+                $left = 257;
                 break;
             case '52':
-                $left = 280;
+                $left = 277;
                 break;
             case '54':
-                $left = 300;
+                $left = 298;
                 break;
             case '56':
                 $left = 320;
                 break;
             case '58':
-                $left = 340;
+                $left = 342;
                 break;
-            case '60s':
-                $left = 360;
+            case '60':
+                $left = 362;
                 break;
             case '62':
-                $left = 380;
+                $left = 382;
                 break;
             case '64':
-                $left = 400;
+                $left = 402;
+                break;
+            default:
+                $left = 450;
                 break;
         }
 
