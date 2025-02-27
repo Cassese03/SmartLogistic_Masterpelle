@@ -86,14 +86,15 @@ class AjaxController extends Controller
         DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = $id_dotes exec asp_DO_End $id_dotes");
         DB::statement("exec asp_DO_End $id_dotes");
         $id_dotes = DB::SELECT('SELECT * FROM DOTes WHERE Id_DOTes = \'' . $id_dotes . '\'')[0];
-        if ($id_dotes->Cd_Do == 'TSI' || $id_dotes->Cd_Do == 'OLI') {
-            if ($id_dotes->Cd_Do == 'TSI') {
-                $html = View::make('stampe.tsi', compact('id_dotes'));
-            }
-            if ($id_dotes->Cd_Do == 'OLI') {
-                $html = View::make('stampe.oli', compact('id_dotes'));
-            }
-        } else {
+        $check_stampa = DB::SELECT('SELECT * FROM DOReport WHERE Cd_DO = \'' . $id_dotes->Cd_DO . '\' and Ud_ReportDoc = \'987B2928-422F-4CF0-8D5A-BB97A6EF7166\' ');
+        if (sizeof($check_stampa) > 0) {
+            $html = View::make('stampe.tsi', compact('id_dotes'));
+        }
+        $check_stampa_2 = DB::SELECT('SELECT * FROM DOReport WHERE Cd_DO = \'' . $id_dotes->Cd_DO . '\' and Ud_ReportDoc = \'4641D5C8-4CAC-4DEB-8597-EC93AEF824EB\' ');
+        if (sizeof($check_stampa_2) > 0) {
+            $html = View::make('stampe.oli', compact('id_dotes'));
+        }
+        if (sizeof($check_stampa) <= 0 && sizeof($check_stampa_2) <= 0) {
             $html = View::make('stampe.generico', compact('id_dotes'));
         }
         /*$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8']);
