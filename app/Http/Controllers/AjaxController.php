@@ -1197,7 +1197,7 @@ class AjaxController extends Controller
 
                 if ($Id_DoTes == '') {
                     $Id_DoTes = DB::table('DOTes')->insertGetId(['Cd_CF' => $cd_cf, 'Cd_Do' => $documento]);
-                    DB::update("Update dotes set NumeroDocRif = '" . $dotes[0]->NumeroDocRif . "' where dotes.id_dotes = '$Id_DoTes'");
+                    DB::update("Update dotes set NumeroDocRif = '" . str_replace('\'', '', $dotes[0]->NumeroDocRif) . "' where dotes.id_dotes = '$Id_DoTes'");
                     DB::update("Update dotes set DataDocRif = '" . $dotes[0]->DataDocRif . "' where dotes.id_dotes = '$Id_DoTes'");
                     DB::update("Update dotes set dotes.reserved_1= 'RRRRRRRRRR' where dotes.id_dotes = '$Id_DoTes'");
                     DB::statement("exec asp_DO_End '$Id_DoTes'");
