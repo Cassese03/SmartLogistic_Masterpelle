@@ -41,6 +41,7 @@ Route::any('magazzino/altri', 'HomeController@altri');
 
 Route::any('ajax/evadi_articolo2/{dorig}', 'AjaxController@evadi_articolo2');
 Route::any('ajax/conferma_righe/{dorig}/{cd_mg_a}/{cd_mg_p}/{cd_do}', 'AjaxController@conferma_righe');
+Route::any('ajax/conferma_righe_all/{dotes}/{cd_mg_a}/{cd_mg_p}/{cd_do}', 'AjaxController@conferma_righe_all');
 Route::any('ajax/cerca_documento/{id_dotes}', 'AjaxController@cerca_documento');
 
 Route::any('magazzino/carico', 'HomeController@carico_magazzino');
@@ -58,7 +59,7 @@ Route::any('magazzino/inventario', 'HomeController@inventario_magazzino');
 Route::any('calcola_totali_ordine', 'HomeController@calcola_totali_ordine');
 
 Route::any('ajax/cerca_articolo/{q}', 'AjaxController@cerca_articolo');
-Route::any('ajax/cerca_articolo/prezzo/{q}', 'AjaxController@cerca_articolo_prezzo');
+Route::any('ajax/cerca_articolo/prezzo/{q}/{listino}', 'AjaxController@cerca_articolo_prezzo');
 Route::any('ajax/cerca_articolo/giacenza/{q}', 'AjaxController@cerca_articolo_giacenza');
 Route::any('ajax/gestiscixml/{id_dotes}', 'AjaxController@GestisciXML');
 Route::any('ajax/check_next_doc/{id_dotes}', 'AjaxController@check_next_doc');

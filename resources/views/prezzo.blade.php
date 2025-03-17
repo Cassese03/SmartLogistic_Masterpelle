@@ -423,13 +423,24 @@
 
                 <!-- <div id="interactive" class="viewport" style="position: relative;margin-top:30px;"></div> -->
                 <div style="width: 80%;padding-left: 20%">
-                    <input type="text" class="form__field" placeholder="Articolo" autocomplete="off"/>
-                    <input type="text" class="form__field" placeholder="Articolo" autofocus autocomplete="off"
-                           required
-                           id="cerca_articolo"/>
-                    <button type="button" style="width: 100%;border-color: transparent;"
-                            onclick="cerca_articolo()"> Cerca
-                    </button>
+                    <div style="margin: 1%;">
+                        <input type="text" class="form__field" placeholder="Articolo" autocomplete="off"/>
+                        <input type="text" class="form__field" placeholder="Articolo" autofocus autocomplete="off"
+                               required
+                               id="cerca_articolo"/>
+                    </div>
+                    <div style="margin: 1%;">
+
+                        <select class="form__field" id="listino">
+                            <option value="LS001" selected>LS001</option>
+                            <option value="LS002">LS002</option>
+                        </select>
+                    </div>
+                    <div style="margin: 1%;">
+                        <button type="button" class="btn btn-primary" style="width: 100%;border-color: transparent;"
+                                onclick="cerca_articolo()"> Cerca
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -441,9 +452,9 @@
 </div>
 
 <div class="modal" id="modal_lista_doc" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog" role="document" style="margin-left: 10%!important;">
         <form method="post">
-            <div class="modal-content">
+            <div class="modal-content" style="width: 75vw!important;height: 100vh!important;">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalLabel">Articolo Trovato</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -454,7 +465,7 @@
                 <div class="modal-body">
                     <div id="ajax_lista_doc"></div>
 
-                    <label>Prezzo</label>
+                    {{--<label>Prezzo</label>
                     <input class="form-control" type="text" id="modal_Prezzo" value="" readonly required
                            autocomplete="off">
                     <input class="form-control" type="hidden" id="modal_Cd_AR" value="" required autocomplete="off">
@@ -467,7 +478,7 @@
                     <select class="form-control" type="text" id="modal_colori" onchange="change_prezzo();"
                             autocomplete="off">
                         <option id="reset">No Colore</option>
-                    </select>
+                    </select>--}}
                 </div>
 
                 <div class="modal-footer">
@@ -504,12 +515,13 @@
 
 
         testo = $('#cerca_articolo').val();
+        cd_ls = $('#listino').val();
         pos = testo.search('/');
         if (testo != '') {
             $('#ajax_loader').fadeIn();
 
             $.ajax({
-                url: "<?php echo URL::asset('/ajax/cerca_articolo/prezzo') ?>/" + testo,
+                url: "<?php echo URL::asset('/ajax/cerca_articolo/prezzo') ?>/" + testo + '/' + cd_ls,
                 context: document.body
             }).done(function (result) {
                 $('#ajax_loader').fadeOut();
