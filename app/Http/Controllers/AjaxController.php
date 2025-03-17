@@ -859,7 +859,7 @@ class AjaxController extends Controller
                 $prezzo_map[$p->Colore][$p->Taglia][str_replace(' ', '', $p->Cd_LS)] = number_format($p->Prezzo, 2, ',', ' ');
             }
             ?>
-            <div class="table-responsive">
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                 <table class="table table-bordered">
                     <thead class="table-dark">
                     <tr>
