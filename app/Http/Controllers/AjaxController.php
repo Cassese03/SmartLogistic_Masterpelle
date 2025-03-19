@@ -797,7 +797,6 @@ class AjaxController extends Controller
         // Sanitizzazione del codice
         $codice = str_replace("slash", "/", $codice);
 
-        // Query principale per recuperare l'articolo
         $articoli = DB::select(
             "SELECT AR.Id_AR, AR.Cd_AR, AR.Descrizione, ARAlias.Alias AS barcode,
                 ARARMisura.UMFatt, LSArticolo.Prezzo
@@ -808,11 +807,13 @@ class AjaxController extends Controller
          WHERE AR.CD_AR LIKE ? OR ARAlias.Alias LIKE ?",
             [$codice, $codice]
         );
+        if (sizeof($articoli) <= 0) {
+            $articoli = DB::SELECT('SELECT AR.* FROM x_ARVRAlias LEFT JOIN AR ON AR.Cd_AR = x_ARVRAlias.Cd_AR WHERE Alias = \'' . $codice . '\' ');
+        }
 
         if (!empty($articoli)) {
             $articolo = $articoli[0];
 
-            // Query per ottenere le taglie
             $taglia = DB::select(
                 "SELECT x_VRVRGruppo.Riga,
                     (SELECT Descrizione FROM x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) AS Taglia,
@@ -826,7 +827,6 @@ class AjaxController extends Controller
                 [$articolo->Cd_AR]
             );
 
-            // Query per ottenere i colori
             $colore_head = DB::select(
                 "SELECT x_VRVRGruppo.Riga,
                     (SELECT Descrizione FROM x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) AS Colore,
@@ -840,7 +840,6 @@ class AjaxController extends Controller
                 [$articolo->Cd_AR]
             );
 
-            // Query per ottenere i prezzi
             $prezzo = DB::select(
                 "SELECT AR.Cd_AR, TAGLIA.Descrizione AS Taglia,
                     COLORE.Descrizione AS Colore, INFOAR.Prezzo,LSRevisione.Cd_LS
@@ -863,7 +862,7 @@ class AjaxController extends Controller
                 <table class="table table-bordered">
                     <thead class="table-dark">
                     <tr>
-                        <th scope="col">#</th>
+                        <th scope="col"><?php echo $articoli[0]->Cd_AR; ?></th>
                         <?php foreach ($taglia as $t) { ?>
                             <th scope="col"><?php echo htmlspecialchars($t->Taglia); ?></th>
                         <?php } ?>
