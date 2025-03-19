@@ -453,21 +453,6 @@
 
                 <div class="modal-body">
                     <div id="ajax_lista_doc"></div>
-
-                    <label>GIACENZA</label>
-                    <input class="form-control" type="text" id="modal_GIACENZA" value="" readonly required
-                           autocomplete="off">
-                    <input class="form-control" type="hidden" id="modal_Cd_AR" value="" required autocomplete="off">
-                    <label>Taglia</label>
-                    <select class="form-control" type="text" id="modal_taglie" onchange="cambioTaglia()"
-                            autocomplete="off">
-                        <option>No Taglia</option>
-                    </select>
-                    <label>Colore</label>
-                    <select class="form-control" type="text" id="modal_colori" onchange="change_GIACENZA();"
-                            autocomplete="off">
-                        <option id="reset">No Colore</option>
-                    </select>
                 </div>
 
                 <div class="modal-footer">
@@ -529,24 +514,5 @@
             alert('Articolo non trovato.');
         }
 
-    }
-
-    function change_GIACENZA() {
-        GIACENZA = $('#modal_colori option:selected').attr('GIACENZA');
-        document.getElementById('modal_GIACENZA').value = GIACENZA;
-
-        listino = $('#modal_colori option:selected').attr('ls');
-        document.getElementById('modal_listino').value = listino;
-    }
-
-    function cambioTaglia() {
-        taglia = $('#modal_taglie option:selected').attr('taglia');
-        document.getElementById('reset').selected = 'selected';
-        for (let elem of document.querySelectorAll("[id^=modal_colori_]")) {
-            elem.style.display = "none";
-        }
-        for (let elem of document.querySelectorAll("[id^=modal_colori_" + taglia + "]")) {
-            elem.style.display = "";
-        }
     }
 </script>

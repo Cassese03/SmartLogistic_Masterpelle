@@ -429,13 +429,13 @@
                                required
                                id="cerca_articolo"/>
                     </div>
-                    <div style="margin: 1%;">
+                   {{-- <div style="margin: 1%;">
 
                         <select class="form__field" id="listino">
                             <option value="LS001" selected>LS001</option>
                             <option value="LS002">LS002</option>
                         </select>
-                    </div>
+                    </div>--}}
                     <div style="margin: 1%;">
                         <button type="button" class="btn btn-primary" style="width: 100%;border-color: transparent;"
                                 onclick="cerca_articolo()"> Cerca
@@ -515,13 +515,13 @@
 
 
         testo = $('#cerca_articolo').val();
-        cd_ls = $('#listino').val();
+        //cd_ls = $('#listino').val();
         pos = testo.search('/');
         if (testo != '') {
             $('#ajax_loader').fadeIn();
 
             $.ajax({
-                url: "<?php echo URL::asset('/ajax/cerca_articolo/prezzo') ?>/" + testo + '/' + cd_ls,
+                url: "<?php echo URL::asset('/ajax/cerca_articolo/prezzo') ?>/" + testo,
                 context: document.body
             }).done(function (result) {
                 $('#ajax_loader').fadeOut();

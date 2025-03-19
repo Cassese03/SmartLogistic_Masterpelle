@@ -792,7 +792,7 @@ class AjaxController extends Controller
         }
     }
 
-    public function cerca_articolo_prezzo($codice, $listino)
+    public function cerca_articolo_prezzo($codice)
     {
         // Sanitizzazione del codice
         $codice = str_replace("slash", "/", $codice);
@@ -857,32 +857,35 @@ class AjaxController extends Controller
             foreach ($prezzo as $p) {
                 $prezzo_map[$p->Colore][$p->Taglia][str_replace(' ', '', $p->Cd_LS)] = number_format($p->Prezzo, 2, ',', ' ');
             }
+            $listini = DB::SELECT('SELECT Cd_LS FROM LS where Cd_LS not in (\'UVEN\',\'UVEN_C\',\'UACQ_F\',\'UACQ\')');
             ?>
             <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                    <tr>
-                        <th scope="col"><?php echo $articoli[0]->Cd_AR; ?></th>
-                        <?php foreach ($taglia as $t) { ?>
-                            <th scope="col"><?php echo htmlspecialchars($t->Taglia); ?></th>
-                        <?php } ?>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($colore_head as $c) { ?>
+                <?php foreach ($listini as $l) { ?>
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
                         <tr>
-                            <th scope="row" class="table-primary"><?php echo htmlspecialchars($c->Colore); ?></th>
+                            <th scope="col">(<?php echo str_replace(' ','',$l->Cd_LS); ?>) <?php echo $articoli[0]->Cd_AR; ?></th>
                             <?php foreach ($taglia as $t) { ?>
-                                <td style="text-align: end">
-                                    <?php
-                                    echo $prezzo_map[$c->Colore][$t->Taglia][str_replace(' ', '', $listino)] ?? '-';
-                                    ?>
-                                </td>
+                                <th scope="col"><?php echo htmlspecialchars($t->Taglia); ?></th>
                             <?php } ?>
                         </tr>
-                    <?php } ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($colore_head as $c) { ?>
+                            <tr>
+                                <th scope="row" class="table-primary"><?php echo htmlspecialchars($c->Colore); ?></th>
+                                <?php foreach ($taglia as $t) { ?>
+                                    <td style="text-align: end">
+                                        <?php
+                                        echo $prezzo_map[$c->Colore][$t->Taglia][str_replace(' ', '', $l->Cd_LS)] ?? '-';
+                                        ?>
+                                    </td>
+                                <?php } ?>
+                            </tr>
+                        <?php } ?>
+                        </tbody>
+                    </table>
+                <?php } ?>
             </div>
             <?php
         } else {
@@ -896,13 +899,102 @@ class AjaxController extends Controller
 
         $codice = str_replace("slash", "/", $codice);
 
+        $articoli = DB::select(
+            "SELECT AR.Id_AR, AR.Cd_AR, AR.Descrizione, ARAlias.Alias AS barcode,
+                ARARMisura.UMFatt, LSArticolo.Prezzo
+         FROM AR
+         LEFT JOIN ARAlias ON AR.Cd_AR = ARAlias.Cd_AR
+         LEFT JOIN ARARMisura ON ARARMisura.Cd_AR = AR.CD_AR
+         LEFT JOIN LSArticolo ON LSArticolo.Cd_AR = AR.Cd_AR
+         WHERE AR.CD_AR LIKE ? OR ARAlias.Alias LIKE ?",
+            [$codice, $codice]
+        );
+        if (sizeof($articoli) <= 0) {
+            $articoli = DB::SELECT('SELECT AR.* FROM x_ARVRAlias LEFT JOIN AR ON AR.Cd_AR = x_ARVRAlias.Cd_AR WHERE Alias = \'' . $codice . '\' ');
+        }
 
-        $articoli = DB::select('SELECT AR.Id_AR,AR.Cd_AR,AR.Descrizione,ARAlias.Alias as barcode,ARARMisura.UMFatt,LSArticolo.Prezzo from AR
-            LEFT JOIN ARAlias ON AR.Cd_AR = ARAlias.Cd_AR
-            LEFT JOIN ARARMisura ON ARARMisura.Cd_AR = AR.CD_AR
-            LEFT JOIN LSArticolo ON LSArticolo.Cd_AR = AR.Cd_AR
-            where AR.CD_AR LIKE \'' . $codice . '\' or ARAlias.Alias Like \'' . $codice . '\'
-            ');
+        if (!empty($articoli)) {
+            $articolo = $articoli[0];
+            $taglia = DB::select(
+                "SELECT x_VRVRGruppo.Riga,
+                    (SELECT Descrizione FROM x_VR WHERE Ud_x_VR = INFOAR.Ud_VR1) AS Taglia,
+                    INFOAR.Ud_VR1
+             FROM AR
+             OUTER APPLY dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR
+             LEFT JOIN x_VRVRGruppo ON x_VRVRGruppo.Ud_VR = INFOAR.Ud_VR1
+             WHERE Cd_AR = ? AND INFOAR.Obsoleto = 'false'
+             GROUP BY INFOAR.Ud_VR1, x_VRVRGruppo.Riga
+             ORDER BY x_VRVRGruppo.Riga",
+                [$articolo->Cd_AR]
+            );
+
+            $colore_head = DB::select(
+                "SELECT x_VRVRGruppo.Riga,
+                    (SELECT Descrizione FROM x_VR WHERE Ud_x_VR = INFOAR.Ud_VR2) AS Colore,
+                    INFOAR.Ud_VR2
+             FROM AR
+             OUTER APPLY dbo.xmtf_ARVRInfo(AR.x_VRData) INFOAR
+             LEFT JOIN x_VRVRGruppo ON x_VRVRGruppo.Ud_VR = INFOAR.Ud_VR2
+             WHERE Cd_AR = ? AND INFOAR.Obsoleto = 'false'
+             GROUP BY INFOAR.Ud_VR2, x_VRVRGruppo.Riga
+             ORDER BY x_VRVRGruppo.Riga",
+                [$articolo->Cd_AR]
+            );
+
+            $giacenza = DB::select(
+                "SELECT AR.Cd_AR, TAGLIA.Descrizione AS Taglia,
+                    COLORE.Descrizione AS Colore,xGD.Cd_MG,xGd.Quantita --, INFOAR.Prezzo,LSRevisione.Cd_LS
+             FROM AR
+             LEFT JOIN xmtf_MGDispEx(YEAR(GETDATE())) xGD on xGD.Cd_AR = AR.Cd_AR --and xGD.Ud_VR1 = INFOAR.Ud_VR1 and xGD.Ud_VR2 = INFOAR.Ud_VR2
+             LEFT JOIN x_VR TAGLIA ON TAGLIA.Ud_x_VR = xGD.Ud_VR1
+             LEFT JOIN x_VR COLORE ON COLORE.Ud_x_VR = xGD.Ud_VR2
+             WHERE AR.Cd_AR = ?
+             ORDER BY COLORE.Descrizione, TAGLIA.Descrizione",
+                [$articolo->Cd_AR]
+            );
+            $giac_map = [];
+
+            $magazzino = DB::SELECT('SELECT Cd_MG FROM MG');
+            foreach ($giacenza as $p) {
+                $giac_map[$p->Colore][$p->Taglia][str_replace(' ', '', $p->Cd_MG)] = number_format($p->Quantita, 2, ',', ' ');
+            }
+            ?>
+            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+
+                <?php foreach ($magazzino as $m) { ?>
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                        <tr>
+                            <th scope="col">(<?php echo str_replace(' ', '', $m->Cd_MG); ?>
+                                ) <?php echo $articoli[0]->Cd_AR; ?> </th>
+                            <?php foreach ($taglia as $t) { ?>
+                                <th scope="col"><?php echo htmlspecialchars($t->Taglia); ?></th>
+                            <?php } ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($colore_head as $c) { ?>
+                            <tr>
+                                <th scope="row" class="table-primary"><?php echo htmlspecialchars($c->Colore); ?></th>
+                                <?php foreach ($taglia as $t) { ?>
+                                    <td style="text-align: end">
+                                        <?php
+                                        echo $giac_map[$c->Colore][$t->Taglia][str_replace(' ', '', $m->Cd_MG)] ?? '-';
+                                        ?>
+                                    </td>
+                                <?php } ?>
+                            </tr>
+                        <?php } ?>
+                        </tbody>
+                    </table>
+
+                <?php } ?>
+            </div>
+            <?php
+        } else {
+            echo "<p class='alert alert-warning'>Nessun articolo trovato.</p>";
+        }
+        /*
         if (sizeof($articoli) > 0) {
             $articolo = $articoli[0];
             $taglia = DB::SELECT('SELECT * FROM
@@ -951,7 +1043,7 @@ class AjaxController extends Controller
                 cambioTaglia();
             </script>
             <?php
-        }
+        }*/
     }
 
     /*
